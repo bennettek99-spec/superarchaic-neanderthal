@@ -32,14 +32,8 @@ import msprime
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "results" / "sims"
-sys.path.insert(0, str(ROOT.parent / "archaic-introgression"))
-try:
-    from archaic.windows import robust_z
-except Exception:                                        # pragma: no cover
-    def robust_z(x):
-        x = np.asarray(x, float); m = np.nanmedian(x)
-        s = 1.4826 * np.nanmedian(np.abs(x - m))
-        return (x - m) / s if s else np.zeros_like(x)
+sys.path.insert(0, str(ROOT / "src"))
+from vcflib import robust_z
 
 GEN = 29.0
 def _g(years):

@@ -12,8 +12,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TAB = ROOT / "results" / "tables"
 SIM = ROOT / "results" / "sims"
 FIG = ROOT / "results" / "figures"
-sys.path.insert(0, str(ROOT.parent / "archaic-introgression"))
-from archaic.windows import robust_z  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from vcflib import robust_z  # noqa: E402
 
 CHROMS = ("21", "22")
 

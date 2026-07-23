@@ -34,14 +34,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 TABLES = ROOT / "results" / "tables"
 OUT = ROOT / "results" / "cddr"
-sys.path.insert(0, str(ROOT.parent / "archaic-introgression"))
-try:
-    from archaic.windows import robust_z
-except Exception:                                        # pragma: no cover
-    def robust_z(x):
-        x = np.asarray(x, float); m = np.nanmedian(x)
-        s = 1.4826 * np.nanmedian(np.abs(x - m))
-        return (x - m) / s if s else np.zeros_like(x)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from vcflib import robust_z
 
 
 def _load(win, chroms):

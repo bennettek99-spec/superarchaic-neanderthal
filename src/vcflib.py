@@ -39,6 +39,30 @@ def open_text(path):
     return open(path, "r", encoding="ascii", errors="replace")
 
 
+def robust_z(x):
+    """Median/MAD standardisation (robust to heavy tails). Vendored so this repo is
+    self-contained; identical to the main pipeline's archaic.windows.robust_z."""
+    x = np.asarray(x, dtype=np.float64)
+    med = np.nanmedian(x)
+    scale = 1.4826 * np.nanmedian(np.abs(x - med))
+    if not np.isfinite(scale) or scale == 0:
+        scale = np.nanstd(x)
+    if not np.isfinite(scale) or scale == 0:
+        return np.zeros_like(x)
+    return (x - med) / scale
+
+
+def empirical_p(x):
+    """Two-sided empirical p-value of each entry within its own ECDF (descriptive)."""
+    x = np.asarray(x, dtype=np.float64)
+    n = int(np.isfinite(x).sum())
+    if n == 0:
+        return np.full_like(x, np.nan)
+    order = np.argsort(np.argsort(x))
+    p = 2.0 * np.minimum(order + 1, n - order) / n
+    return np.clip(p, 1.0 / n, 1.0)
+
+
 def parse_info(info: str) -> dict:
     """Parse a VCF INFO string into {key: value}; bare flags map to True."""
     d = {}

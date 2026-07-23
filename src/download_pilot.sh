@@ -3,7 +3,8 @@
 # Safe to re-run: skips files whose local size already matches the remote Content-Length.
 set -u
 BASE="https://cdna.eva.mpg.de/neandertal"
-ROOT="C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data"
+# ROOT/data resolves relative to this script's location, so the project folder can move.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/data"
 RAW="$ROOT/raw"; MASK="$ROOT/masks"; MOD="$ROOT/modern"; ANC="$ROOT/ancestral"
 mkdir -p "$RAW" "$MASK" "$MOD" "$ANC"
 LOG="$ROOT/../results/logs/download_pilot.log"

@@ -31,31 +31,13 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import vcflib as V
+from vcflib import robust_z, empirical_p
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "data" / "cache"
 MASKS = ROOT / "data" / "masks"
 TABLES = ROOT / "results" / "tables"
 CDDRDIR = ROOT / "results" / "cddr"
-
-# window-scan reuses the main pipeline's robust z / empirical p if importable
-try:
-    sys.path.insert(0, str(ROOT.parent / "archaic-introgression"))
-    from archaic.windows import robust_z, empirical_p
-except Exception:                                    # pragma: no cover - fallback
-    def robust_z(x):
-        x = np.asarray(x, float); med = np.nanmedian(x)
-        mad = np.nanmedian(np.abs(x - med)); s = 1.4826 * mad
-        if not np.isfinite(s) or s == 0:
-            s = np.nanstd(x)
-        return (x - med) / s if s else np.zeros_like(x)
-
-    def empirical_p(x):
-        x = np.asarray(x, float); n = np.isfinite(x).sum()
-        if n == 0:
-            return np.full_like(x, np.nan)
-        r = np.argsort(np.argsort(x))
-        return np.clip(2.0 * np.minimum(r + 1, n - r) / n, 1.0 / n, 1.0)
 
 ARCHAICS = ["Denisova", "AltaiNea", "Vindija33.19", "Chagyrskaya"]
 SHORT = {"Denisova": "den", "AltaiNea": "alt", "Vindija33.19": "vin", "Chagyrskaya": "chag"}
