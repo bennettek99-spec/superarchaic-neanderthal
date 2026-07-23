@@ -36,14 +36,16 @@ declare -A MASKURL=(
 )
 ORDER=(Denisova AltaiNea Vindija33.19 Chagyrskaya)
 
-fetch(){ # url out
+fetch(){ # url out  — resume; abort+retry a stalled connection (no 33-min hangs)
   local url="$1" out="$2" rem loc
   rem=$(curl -sIL --max-time 60 "$url" 2>/dev/null | grep -i '^content-length' | tail -1 | tr -d '\r' | awk '{print $2}')
   if [[ -f "$out" && -n "${rem:-}" ]]; then
     loc=$(stat -c %s "$out" 2>/dev/null || echo 0)
     [[ "$loc" == "$rem" ]] && return 0
   fi
-  curl -fL -C - --retry 5 --retry-delay 5 --max-time 7200 -o "$out" "$url"
+  curl -fL -C - --retry 8 --retry-delay 5 --retry-all-errors \
+    --connect-timeout 30 --speed-limit 50000 --speed-time 60 \
+    --max-time 7200 -o "$out" "$url"
 }
 
 cache_ok(){ [[ -f "$1" ]] && [[ "$(zcat "$1" 2>/dev/null | head -2 | wc -l)" -ge 1 ]]; }
@@ -58,7 +60,8 @@ for C in "$@"; do
     vcf="$RAW/$G.$C.vcf.gz"
     tmpl="${URL[$G]}"; url="$BASE/${tmpl/\{c\}/$C}"
     say "  chr$C $G: downloading $(basename "$url")"
-    if ! fetch "$url" "$vcf"; then say "  chr$C $G: DOWNLOAD FAILED $url"; continue; fi
+    if ! fetch "$url" "$vcf" || ! gzip -t "$vcf" 2>/dev/null; then
+      say "  chr$C $G: DOWNLOAD/gzip FAILED (partial kept for resume)"; continue; fi
     say "  chr$C $G: extracting cache"
     PYTHONIOENCODING=utf-8 "$PY" "$ROOT/src/extract_variants.py" --chroms "$C" --genomes "$G" >>"$LOG" 2>&1
     if cache_ok "$cfile"; then
@@ -78,10 +81,18 @@ for C in "$@"; do
     say "  chr$C 1000G: cache present, skip"
   else
     mvcf="$MOD/ALL.chr$C.phase3.vcf.gz"
-    fetch "http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr$C.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz" "$mvcf"
-    PYTHONIOENCODING=utf-8 "$PY" "$ROOT/src/extract_modern.py" --chroms "$C" --vcf "$mvcf" >>"$LOG" 2>&1
-    if cache_ok "$mcache"; then
-      [[ "$KEEP_VCF" == "1" ]] || { rm -f "$mvcf"; say "  chr$C 1000G: cached OK, deleted VCF"; }
+    rm -f "$CACHE/1000G.chr$C.freq.tsv.tmp.gz"   # clear any stale partial cache
+    murl="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr$C.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz"
+    if fetch "$murl" "$mvcf" && gzip -t "$mvcf" 2>/dev/null; then
+      say "  chr$C 1000G: extracting cache"
+      PYTHONIOENCODING=utf-8 "$PY" "$ROOT/src/extract_modern.py" --chroms "$C" --vcf "$mvcf" >>"$LOG" 2>&1
+      if cache_ok "$mcache"; then
+        [[ "$KEEP_VCF" == "1" ]] || { rm -f "$mvcf"; say "  chr$C 1000G: cached OK, deleted VCF"; }
+      else
+        say "  chr$C 1000G: EXTRACT FAILED"
+      fi
+    else
+      say "  chr$C 1000G: DOWNLOAD/gzip FAILED (partial kept for resume)"
     fi
   fi
   dt=$(( $(date +%s) - t0 ))
