@@ -1,0 +1,8 @@
+[16:34:31] ===== chr21 START =====
+[16:34:31]   chr21 Denisova: cache present, skip
+[16:34:32]   chr21 AltaiNea: cache present, skip
+[16:34:32]   chr21 Vindija33.19: cache present, skip
+[16:34:32]   chr21 Chagyrskaya: cache present, skip
+[16:34:32]   chr21 1000G: cache present, skip
+[16:34:32] ===== chr21 DONE in 0m1s | data/ now 6.5G =====
+[16:34:32] ALL REQUESTED CHROMOSOMES PROCESSED. Caches in data/cache/ (small); raw VCFs deleted.

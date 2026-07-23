@@ -67,3 +67,17 @@ shared, and not yet significance-tested. See `docs/FINDINGS.md`. Genome-wide sca
 `src/scan_windows.py` → `src/neanderthal_compare.py` → `src/rank_candidates.py` →
 `src/make_figures.py`; calibration: `sims/superarchaic_sim.py --mode discriminate`.
 Tests: `python tests/test_pipeline.py`.
+
+## Laptop-friendly staggered acquisition (`src/stagger.sh`)
+Genome-wide raw VCFs total ~230–260 GB — too much to hold at once on a laptop. The scan only
+needs the small per-chromosome **variant caches** (~1–2 MB/genome), not the VCFs, so acquisition
+is staged: for each chromosome, one genome at a time, **download → extract cache → verify →
+delete the VCF**. Peak disk stays at a single VCF (~6 GB worst case). Resumable (a genome is
+skipped once its cache exists; a VCF is deleted only after its cache is confirmed).
+
+```bash
+bash src/stagger.sh 20 19        # process a couple of chromosomes now
+bash src/stagger.sh $(seq 1 22)  # whole autosome set, deleting VCFs as it goes
+```
+After caches accumulate, run `scan_windows.py --chroms <list>` etc. on the cached chromosomes —
+no VCFs required. Stop/resume anytime; completed chromosomes are skipped.
