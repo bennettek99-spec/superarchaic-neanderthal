@@ -6,3 +6,62 @@
 [16:34:32]   chr21 1000G: cache present, skip
 [16:34:32] ===== chr21 DONE in 0m1s | data/ now 6.5G =====
 [16:34:32] ALL REQUESTED CHROMOSOMES PROCESSED. Caches in data/cache/ (small); raw VCFs deleted.
+[16:37:49] ===== chr19 START =====
+[16:37:49]   chr19 Denisova: downloading DenisovaPinky.hg19_1000g.19.mod.vcf.gz
+[16:45:59]   chr19 Denisova: extracting cache
+chr19:
+  Denisova chr19: 154,229 sites kept of 154,229 variant lines in 47s -> Denisova.chr19.variants.tsv.gz
+[16:46:47]   chr19 Denisova: cached OK, deleted VCF (Denisova.19.vcf.gz)
+[16:46:47]   chr19 AltaiNea: downloading AltaiNea.hg19_1000g.19.mod.vcf.gz
+[16:53:30]   chr19 AltaiNea: extracting cache
+chr19:
+  AltaiNea chr19: 156,377 sites kept of 156,377 variant lines in 48s -> AltaiNea.chr19.variants.tsv.gz
+[16:54:19]   chr19 AltaiNea: cached OK, deleted VCF (AltaiNea.19.vcf.gz)
+[16:54:19]   chr19 Vindija33.19: downloading chr19_mq25_mapab100.vcf.gz
+[16:57:14]   chr19 Vindija33.19: extracting cache
+chr19:
+  Vindija33.19 chr19: 50,963 sites kept of 50,963 variant lines in 21s -> Vindija33.19.chr19.variants.tsv.gz
+[16:57:35]   chr19 Vindija33.19: cached OK, deleted VCF (Vindija33.19.19.vcf.gz)
+[16:57:35]   chr19 Chagyrskaya: downloading chr19.noRB.vcf.gz
+[17:00:14]   chr19 Chagyrskaya: extracting cache
+chr19:
+  Chagyrskaya chr19: 49,663 sites kept of 49,663 variant lines in 19s -> Chagyrskaya.chr19.variants.tsv.gz
+[17:00:34]   chr19 Chagyrskaya: cached OK, deleted VCF (Chagyrskaya.19.vcf.gz)
+[17:00:38]   chr19 mask Altai ok
+[17:00:41]   chr19 mask Denisova ok
+[17:00:43]   chr19 mask Vindija33.19 ok
+[17:00:46]   chr19 mask Chagyrskaya ok
+    chr19: 1,000,000 lines (68s)
+  chr19: 1,751,878 biallelic SNPs of 1,832,506 lines in 126s -> 1000G.chr19.freq.tsv.gz
+[17:09:28]   chr19 1000G: cached OK, deleted VCF
+[17:09:28] ===== chr19 DONE in 31m39s | data/ now 823M =====
+[17:09:28] ===== chr20 START =====
+[17:09:28]   chr20 Denisova: downloading DenisovaPinky.hg19_1000g.20.mod.vcf.gz
+[17:14:48]   chr20 Denisova: extracting cache
+chr20:
+  Denisova chr20: 142,189 sites kept of 142,189 variant lines in 52s -> Denisova.chr20.variants.tsv.gz
+[17:15:40]   chr20 Denisova: cached OK, deleted VCF (Denisova.20.vcf.gz)
+[17:15:40]   chr20 AltaiNea: downloading AltaiNea.hg19_1000g.20.mod.vcf.gz
+[17:22:50]   chr20 AltaiNea: extracting cache
+chr20:
+  AltaiNea chr20: 144,147 sites kept of 144,147 variant lines in 87s -> AltaiNea.chr20.variants.tsv.gz
+[17:24:17]   chr20 AltaiNea: cached OK, deleted VCF (AltaiNea.20.vcf.gz)
+[17:24:17]   chr20 Vindija33.19: downloading chr20_mq25_mapab100.vcf.gz
+[17:27:55]   chr20 Vindija33.19: extracting cache
+chr20:
+  Vindija33.19 chr20: 66,707 sites kept of 66,707 variant lines in 29s -> Vindija33.19.chr20.variants.tsv.gz
+[17:28:25]   chr20 Vindija33.19: cached OK, deleted VCF (Vindija33.19.20.vcf.gz)
+[17:28:25]   chr20 Chagyrskaya: downloading chr20.noRB.vcf.gz
+[17:31:59]   chr20 Chagyrskaya: extracting cache
+chr20:
+  Chagyrskaya chr20: 65,847 sites kept of 65,847 variant lines in 27s -> Chagyrskaya.chr20.variants.tsv.gz
+[17:32:27]   chr20 Chagyrskaya: cached OK, deleted VCF (Chagyrskaya.20.vcf.gz)
+[17:32:29]   chr20 mask Altai ok
+[17:32:32]   chr20 mask Denisova ok
+[17:32:34]   chr20 mask Vindija33.19 ok
+[17:32:37]   chr20 mask Chagyrskaya ok
+    chr20: 1,000,000 lines (69s)
+  chr20: 1,739,315 biallelic SNPs of 1,812,841 lines in 125s -> 1000G.chr20.freq.tsv.gz
+[17:40:16]   chr20 1000G: cached OK, deleted VCF
+[17:40:17] ===== chr20 DONE in 30m48s | data/ now 851M =====
+[17:40:17] ALL REQUESTED CHROMOSOMES PROCESSED. Caches in data/cache/ (small); raw VCFs deleted.
