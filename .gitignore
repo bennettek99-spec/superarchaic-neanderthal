@@ -1,0 +1,38 @@
+# Large genomic data — never commit
+data/raw/
+data/modern/
+data/ancestral/
+data/masks/
+data/cache/
+
+# Large regenerable per-window tables (keep the small CDDR catalogs + summaries)
+results/tables/windows.*.tsv
+*.vcf
+*.vcf.gz
+*.vcf.gz.tbi
+*.bcf
+*.bam
+*.bai
+*.fa
+*.fa.gz
+*.fasta
+*.bed.gz
+
+# Results that are large/regenerable (keep small CSV catalogs + figures via force-add if desired)
+results/**/*.npz
+results/**/*.parquet
+results/logs/*.out
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.coverage
+
+# OS
+.DS_Store
+Thumbs.db
+
+# machine-local paths
+config/paths.yaml

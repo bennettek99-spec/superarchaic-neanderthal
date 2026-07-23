@@ -1,0 +1,6 @@
+model	n_win	n_cddr	cddr_rate	pct_shared	pct_denonly
+M0_none	1800	13	0.007222	7.692	15.38
+M1_neandersovan	1800	36	0.02	5.556	61.11
+M2_denisovan_only	1800	39	0.02167	2.564	87.18
+M3_separate	1800	49	0.02722	4.082	77.55
+M4_ancient_structure	1800	64	0.03556	25	37.5

@@ -1,0 +1,13 @@
+# Copy to config/paths.yaml (gitignored) and edit for this machine.
+
+# Where downloaded archaic VCFs + masks live (large; outside git):
+data_dir: "C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data"
+
+# EVA mirror base (https). Directory layout is under archaic_sources[*].vcf_dir in config.yaml
+eva_base_url: "https://cdna.eva.mpg.de/neandertal"
+
+# Reuse the validated stats package from the main pipeline (read-only):
+archaic_package_dir: "../archaic-introgression"
+
+# Local 1000 Genomes phase3 VCFs already present (chr 1,2,8,12,19,22):
+local_1000g_dir: "C:/Users/benne/Desktop/Archaic Genomics Pipeline/vcf"

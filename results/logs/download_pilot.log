@@ -1,0 +1,55 @@
+[15:51:40] === PILOT DOWNLOAD START (chr21, chr22) ===
+[15:51:40] GET  AltaiNea.21.vcf.gz  (remote=941872399 bytes)
+[15:53:30] DONE AltaiNea.21.vcf.gz
+[15:53:30] GET  Denisova.21.vcf.gz  (remote=831253255 bytes)
+[15:55:01] DONE Denisova.21.vcf.gz
+[15:55:02] GET  Vindija33.19.21.vcf.gz  (remote=652029015 bytes)
+[15:56:29] DONE Vindija33.19.21.vcf.gz
+[15:56:30] GET  Chagyrskaya.21.vcf.gz  (remote=603483664 bytes)
+[15:58:02] DONE Chagyrskaya.21.vcf.gz
+[15:58:03] GET  Altai.chr21.mask.bed.gz  (remote=2123660 bytes)
+[15:58:04] DONE Altai.chr21.mask.bed.gz
+[15:58:05] GET  Denisova.chr21.mask.bed.gz  (remote=2214346 bytes)
+[15:58:07] DONE Denisova.chr21.mask.bed.gz
+[15:58:07] GET  Vindija33.19.chr21.mask.bed.gz  (remote=1631237 bytes)
+[15:58:09] DONE Vindija33.19.chr21.mask.bed.gz
+[15:58:10] GET  Chagyrskaya.chr21.mask.bed.gz  (remote=1890964 bytes)
+[15:58:12] DONE Chagyrskaya.chr21.mask.bed.gz
+[15:58:12] GET  AltaiNea.22.vcf.gz  (remote=898207911 bytes)
+[16:00:27] DONE AltaiNea.22.vcf.gz
+[16:00:28] GET  Denisova.22.vcf.gz  (remote=798807035 bytes)
+[16:03:51] DONE Denisova.22.vcf.gz
+[16:03:52] GET  Vindija33.19.22.vcf.gz  (remote=602648791 bytes)
+[16:05:36] DONE Vindija33.19.22.vcf.gz
+[16:05:37] GET  Chagyrskaya.22.vcf.gz  (remote=554034208 bytes)
+[16:07:10] DONE Chagyrskaya.22.vcf.gz
+[16:07:11] GET  Altai.chr22.mask.bed.gz  (remote=1952854 bytes)
+[16:07:12] DONE Altai.chr22.mask.bed.gz
+[16:07:13] GET  Denisova.chr22.mask.bed.gz  (remote=2169128 bytes)
+[16:07:14] DONE Denisova.chr22.mask.bed.gz
+[16:07:15] GET  Vindija33.19.chr22.mask.bed.gz  (remote=1550985 bytes)
+[16:07:16] DONE Vindija33.19.chr22.mask.bed.gz
+[16:07:17] GET  Chagyrskaya.chr22.mask.bed.gz  (remote=1778917 bytes)
+[16:07:19] DONE Chagyrskaya.chr22.mask.bed.gz
+[16:07:20] SKIP (complete) ALL.chr21.phase3.vcf.gz
+[16:07:20] GET  homo_sapiens_ancestor_GRCh37_e71.tar.bz2  (remote=802722217 bytes)
+[16:22:39] DONE homo_sapiens_ancestor_GRCh37_e71.tar.bz2
+[16:22:39] === PILOT DOWNLOAD END ===
+[16:22:39] Local sizes:
+899M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/AltaiNea.21.vcf.gz
+857M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/AltaiNea.22.vcf.gz
+576M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Chagyrskaya.21.vcf.gz
+529M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Chagyrskaya.22.vcf.gz
+793M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Denisova.21.vcf.gz
+762M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Denisova.22.vcf.gz
+622M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Vindija33.19.21.vcf.gz
+575M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/raw/Vindija33.19.22.vcf.gz
+2.1M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Altai.chr21.mask.bed.gz
+1.9M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Altai.chr22.mask.bed.gz
+1.9M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Chagyrskaya.chr21.mask.bed.gz
+1.7M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Chagyrskaya.chr22.mask.bed.gz
+2.2M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Denisova.chr21.mask.bed.gz
+2.1M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Denisova.chr22.mask.bed.gz
+1.6M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Vindija33.19.chr21.mask.bed.gz
+1.5M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/masks/Vindija33.19.chr22.mask.bed.gz
+201M	C:/Users/benne/Desktop/Archaic Genomics Pipeline/superarchaic-neanderthal/data/modern/ALL.chr21.phase3.vcf.gz

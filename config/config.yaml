@@ -1,0 +1,62 @@
+# Superarchaic-in-Neanderthal project configuration.
+# Machine-local paths come from config/paths.yaml (gitignored); no hard-coded dirs.
+
+reference_build: hg19            # everything is hg19 / 1000g coordinates (matches EVA VCFs + local 1000G)
+
+# High-coverage archaic genomes (Max Planck EVA: https://cdna.eva.mpg.de/neandertal/)
+archaic_sources:
+  AltaiNeanderthal:
+    kind: neanderthal
+    coverage_x: 52
+    citation: "Prufer et al. 2014, Nature (10.1038/nature12886)"
+    vcf_dir: "altai/AltaiNeandertal/VCF"
+    vcf_pattern: "AltaiNea.hg19_1000g.{chrom}.mod.vcf.gz"
+  Vindija33.19:
+    kind: neanderthal
+    coverage_x: 30
+    citation: "Prufer et al. 2017, Science (10.1126/science.aao1887)"
+    vcf_dir: "Vindija/VCF/Vindija33.19"
+    vcf_pattern: "chr{chrom}_mq25_mapab100.vcf.gz"
+  Chagyrskaya8:
+    kind: neanderthal
+    coverage_x: 27
+    citation: "Mafessoni et al. 2020, PNAS (10.1073/pnas.2004944117)"
+    vcf_dir: "Chagyrskaya/VCF"
+    vcf_pattern: "chr{chrom}.noRB.vcf.gz"
+  AltaiDenisovan:
+    kind: denisovan
+    coverage_x: 30
+    citation: "Meyer et al. 2012, Science (10.1126/science.1224344); Prufer et al. 2014"
+    vcf_dir: "altai/Denisovan"        # files sit directly here (no /VCF subdir) — verified 2026-07-23
+    vcf_pattern: "DenisovaPinky.hg19_1000g.{chrom}.mod.vcf.gz"
+
+# Callability / mappability masks (BED), mq25 mapab100 where available
+masks:
+  base_dir: "Vindija/FilterBed"     # subdirs: Altai/ Denisova/ Vindija33.19/ (+ LBK Loschbour Ust_Ishim)
+
+# Polarization / outgroup
+ancestral:
+  source: "Ensembl EPO 6-primate ancestral, GRCh37 (homo_sapiens_ancestor_GRCh37)"
+  fallback: "chimp allele from archaic VCF INFO where present"
+
+# Modern human reference panels
+modern:
+  local_1000g_dir: "../vcf"         # ALL.chr{n}.phase3...vcf.gz already present for chr 1,2,8,12,19,22
+  populations_africa: [YRI, MSL, ESN, LWK, GWD]     # exclude ASW/ACB (recent admixture)
+  populations_eurasia: [CEU, TSI, CHB, JPT, GIH, FIN]
+
+# Window scan
+windows:
+  sizes_kb: [20, 50, 100]
+  min_callable_fraction: 0.30       # drop windows with < this callable
+  step_kb: null                     # null = non-overlapping
+
+# Statistics
+analysis:
+  n_blocks: 50                      # block jackknife (matches main pipeline)
+  transversions_only_variant: true  # also run a TV-only pass (aDNA damage control)
+  min_mapq: 25
+  min_gq: 30
+
+# Simulation models (msprime); parameters set in sims/
+sim_models: [M0_none, M1_neandersovan, M2_denisovan_only, M3_separate, M4_ancient_structure]

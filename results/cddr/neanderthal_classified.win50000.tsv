@@ -1,0 +1,3 @@
+chrom	start	end	z_den_afr	div_den_afr	category	n_nea_shared	nea_detail	exc_alt_afr	exc_vin_afr	exc_chag_afr	z_den_alt	z_den_vin	z_den_chag	mean_map20	mean_rm	mean_ur	callable_frac_den
+22	23050000	23100000	3.7904	0.00362881	3	0	alt:ambig;vin:ambig;chag:ambig	5.16527	5.18302	5.08317	8.53478	8.44677	8.41284		0	0	0.34386
+22	49650000	49700000	3.16145	0.00326656	3	0	alt:ambig;vin:ambig;chag:ambig	-0.0309208	0.0236017	-0.198003	0.978713	0.955889	0.893119		0.461538	0	0.64824

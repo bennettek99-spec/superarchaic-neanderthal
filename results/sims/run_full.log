@@ -1,0 +1,7 @@
+M0_none                cddr_rate=0.0125  z_nea@cddr=3.31  corr(zden,znea)=0.88
+M1_neandersovan        cddr_rate=0.0425  z_nea@cddr=1.89  corr(zden,znea)=0.70
+M2_denisovan_only      cddr_rate=0.0150  z_nea@cddr=1.01  corr(zden,znea)=0.74
+M3_separate            cddr_rate=0.0075  z_nea@cddr=1.84  corr(zden,znea)=0.63
+M4_ancient_structure   cddr_rate=0.0225  z_nea@cddr=2.33  corr(zden,znea)=0.68
+
+wrote C:\Users\benne\Desktop\Archaic Genomics Pipeline\superarchaic-neanderthal\results\sims\model_summary.tsv

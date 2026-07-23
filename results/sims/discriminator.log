@@ -1,0 +1,10 @@
+
+CONFOUND-CONTROLLED DISCRIMINATOR (f_super=0.06, seeds=[1, 2, 3], 30Mb x3)
+model                   n_cddr cddr_rate  %shared %den-only
+M0_none                     13    0.0072        8        15
+M1_neandersovan             36    0.0200        6        61
+M2_denisovan_only           39    0.0217        3        87
+M3_separate                 49    0.0272        4        78
+M4_ancient_structure        64    0.0356       25        38
+
+Expectation: M1(Model A) high %shared; M2(Model B) high %den-only; M0 low CDDR rate (= FPR).
