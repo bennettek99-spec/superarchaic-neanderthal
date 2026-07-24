@@ -36,3 +36,6 @@ Thumbs.db
 
 # machine-local paths
 config/paths.yaml
+
+# scratch orchestration helpers
+src/_*.sh

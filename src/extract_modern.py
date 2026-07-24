@@ -64,7 +64,10 @@ def extract(chrom: str, vcf: Path = None, force: bool = False) -> Path:
             for line in fh:
                 if line.startswith("#"):
                     continue
-                f = line.rstrip("\n").split("\t")
+                # split only the first 8 columns; never split the ~2504 genotype
+                # columns (they are ~5-10 kB/line and we only read INFO). This is the
+                # difference between ~2 min and ~12 h on a throttled laptop.
+                f = line.rstrip("\n").split("\t", 8)
                 if len(f) < 8:
                     continue
                 n_in += 1
