@@ -15,7 +15,7 @@ FIG = ROOT / "results" / "figures"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from vcflib import robust_z  # noqa: E402
 
-CHROMS = ("21", "22")
+CHROMS = ("16", "17", "18", "19", "20", "21", "22")
 
 
 def load(win):

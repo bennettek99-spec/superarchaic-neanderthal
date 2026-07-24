@@ -65,3 +65,145 @@ chr20:
 [17:40:16]   chr20 1000G: cached OK, deleted VCF
 [17:40:17] ===== chr20 DONE in 30m48s | data/ now 851M =====
 [17:40:17] ALL REQUESTED CHROMOSOMES PROCESSED. Caches in data/cache/ (small); raw VCFs deleted.
+[18:04:46] ===== chr16 START =====
+[18:04:46]   chr16 Denisova: downloading DenisovaPinky.hg19_1000g.16.mod.vcf.gz
+[18:13:33]   chr16 Denisova: extracting cache
+chr16:
+  Denisova chr16: 202,956 sites kept of 202,956 variant lines in 68s -> Denisova.chr16.variants.tsv.gz
+[18:14:42]   chr16 Denisova: cached OK, deleted VCF (Denisova.16.vcf.gz)
+[18:14:42]   chr16 AltaiNea: downloading AltaiNea.hg19_1000g.16.mod.vcf.gz
+[18:23:07]   chr16 AltaiNea: extracting cache
+chr16:
+  AltaiNea chr16: 208,705 sites kept of 208,705 variant lines in 69s -> AltaiNea.chr16.variants.tsv.gz
+[18:24:16]   chr16 AltaiNea: cached OK, deleted VCF (AltaiNea.16.vcf.gz)
+[18:24:16]   chr16 Vindija33.19: downloading chr16_mq25_mapab100.vcf.gz
+[18:31:24]   chr16 Vindija33.19: extracting cache
+chr16:
+  Vindija33.19 chr16: 88,672 sites kept of 88,672 variant lines in 51s -> Vindija33.19.chr16.variants.tsv.gz
+[18:32:15]   chr16 Vindija33.19: cached OK, deleted VCF (Vindija33.19.16.vcf.gz)
+[18:32:15]   chr16 Chagyrskaya: downloading chr16.noRB.vcf.gz
+[18:36:19]   chr16 Chagyrskaya: extracting cache
+chr16:
+  Chagyrskaya chr16: 86,258 sites kept of 86,258 variant lines in 32s -> Chagyrskaya.chr16.variants.tsv.gz
+[18:36:52]   chr16 Chagyrskaya: cached OK, deleted VCF (Chagyrskaya.16.vcf.gz)
+[18:36:54]   chr16 mask Altai ok
+[18:36:57]   chr16 mask Denisova ok
+[18:36:59]   chr16 mask Vindija33.19 ok
+[18:37:01]   chr16 mask Chagyrskaya ok
+    chr16: 1,000,000 lines (71s)
+    chr16: 2,000,000 lines (142s)
+Traceback (most recent call last):
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_modern.py", line 99, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_modern.py", line 95, in main
+    extract(c, vcf=args.vcf, force=args.force)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_modern.py", line 64, in extract
+    for line in fh:
+                ^^
+  File "C:\Users\benne\AppData\Local\Python\pythoncore-3.14-64\Lib\gzip.py", line 360, in read1
+    return self._buffer.read1(size)
+           ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\benne\AppData\Local\Python\pythoncore-3.14-64\Lib\compression\_common\_streams.py", line 68, in readinto
+    data = self.read(len(byte_view))
+  File "C:\Users\benne\AppData\Local\Python\pythoncore-3.14-64\Lib\gzip.py", line 590, in read
+    raise EOFError("Compressed file ended before the "
+                   "end-of-stream marker was reached")
+EOFError: Compressed file ended before the end-of-stream marker was reached
+[18:44:01] ===== chr16 DONE in 39m15s | data/ now 1.3G =====
+[18:44:01] ===== chr17 START =====
+[18:44:01]   chr17 Denisova: downloading DenisovaPinky.hg19_1000g.17.mod.vcf.gz
+[18:50:53]   chr17 Denisova: extracting cache
+chr17:
+  Denisova chr17: 177,400 sites kept of 177,400 variant lines in 67s -> Denisova.chr17.variants.tsv.gz
+[18:52:01]   chr17 Denisova: cached OK, deleted VCF (Denisova.17.vcf.gz)
+[18:52:01]   chr17 AltaiNea: downloading AltaiNea.hg19_1000g.17.mod.vcf.gz
+[18:59:52]   chr17 AltaiNea: extracting cache
+chr17:
+  AltaiNea chr17: 180,058 sites kept of 180,058 variant lines in 68s -> AltaiNea.chr17.variants.tsv.gz
+[19:01:01]   chr17 AltaiNea: cached OK, deleted VCF (AltaiNea.17.vcf.gz)
+[19:01:01]   chr17 Vindija33.19: downloading chr17_mq25_mapab100.vcf.gz
+[19:34:08]   chr17 Vindija33.19: DOWNLOAD FAILED https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Vindija33.19/chr17_mq25_mapab100.vcf.gz
+[19:34:08]   chr17 Chagyrskaya: downloading chr17.noRB.vcf.gz
+[19:40:02]   chr17 Chagyrskaya: extracting cache
+chr17:
+  Chagyrskaya chr17: 71,773 sites kept of 71,773 variant lines in 44s -> Chagyrskaya.chr17.variants.tsv.gz
+[19:40:47]   chr17 Chagyrskaya: cached OK, deleted VCF (Chagyrskaya.17.vcf.gz)
+[19:40:50]   chr17 mask Altai ok
+[19:40:52]   chr17 mask Denisova ok
+[19:40:55]   chr17 mask Vindija33.19 ok
+[19:40:59]   chr17 mask Chagyrskaya ok
+    chr17: 1,000,000 lines (126s)
+    chr17: 2,000,000 lines (254s)
+  chr17: 2,227,080 biallelic SNPs of 2,329,288 lines in 296s -> 1000G.chr17.freq.tsv.gz
+[19:52:46]   chr17 1000G: cached OK, deleted VCF
+[19:52:46] ===== chr17 DONE in 68m45s | data/ now 1.7G =====
+[19:52:46] ===== chr18 START =====
+[19:52:46]   chr18 Denisova: downloading DenisovaPinky.hg19_1000g.18.mod.vcf.gz
+[19:57:42]   chr18 Denisova: extracting cache
+chr18:
+  Denisova chr18: 165,218 sites kept of 165,218 variant lines in 65s -> Denisova.chr18.variants.tsv.gz
+[19:58:47]   chr18 Denisova: cached OK, deleted VCF (Denisova.18.vcf.gz)
+[19:58:47]   chr18 AltaiNea: downloading AltaiNea.hg19_1000g.18.mod.vcf.gz
+[20:03:44]   chr18 AltaiNea: extracting cache
+chr18:
+  AltaiNea chr18: 167,677 sites kept of 167,677 variant lines in 66s -> AltaiNea.chr18.variants.tsv.gz
+[20:04:51]   chr18 AltaiNea: cached OK, deleted VCF (AltaiNea.18.vcf.gz)
+[20:04:51]   chr18 Vindija33.19: downloading chr18_mq25_mapab100.vcf.gz
+[20:08:30]   chr18 Vindija33.19: extracting cache
+chr18:
+  Vindija33.19 chr18: 84,551 sites kept of 84,551 variant lines in 38s -> Vindija33.19.chr18.variants.tsv.gz
+[20:09:08]   chr18 Vindija33.19: cached OK, deleted VCF (Vindija33.19.18.vcf.gz)
+[20:09:08]   chr18 Chagyrskaya: downloading chr18.noRB.vcf.gz
+[20:12:00]   chr18 Chagyrskaya: extracting cache
+chr18:
+  Chagyrskaya chr18: 81,947 sites kept of 81,947 variant lines in 36s -> Chagyrskaya.chr18.variants.tsv.gz
+[20:12:36]   chr18 Chagyrskaya: cached OK, deleted VCF (Chagyrskaya.18.vcf.gz)
+[20:12:40]   chr18 mask Altai ok
+[20:12:42]   chr18 mask Denisova ok
+[20:12:45]   chr18 mask Vindija33.19 ok
+[20:12:47]   chr18 mask Chagyrskaya ok
+    chr18: 1,000,000 lines (71s)
+    chr18: 2,000,000 lines (142s)
+  chr18: 2,171,378 biallelic SNPs of 2,267,185 lines in 161s -> 1000G.chr18.freq.tsv.gz
+[20:20:10]   chr18 1000G: cached OK, deleted VCF
+[20:20:10] ===== chr18 DONE in 27m24s | data/ now 1.7G =====
+  SKIP 1000G.chr18.freq.tsv.gz (exists)
+[20:20:11]   chr18 1000G: cached OK, deleted VCF
+[20:21:16] ===== chr16 START =====
+[20:21:16]   chr16 Denisova: cache present, skip
+[20:21:16]   chr16 AltaiNea: cache present, skip
+[20:21:16]   chr16 Vindija33.19: cache present, skip
+[20:21:16]   chr16 Chagyrskaya: cache present, skip
+[21:19:34]   chr16 1000G: extracting cache
+    chr16: 1,000,000 lines (330s)
+    chr16: 2,000,000 lines (5499s)
+  chr16: 2,596,072 biallelic SNPs of 2,697,949 lines in 45839s -> 1000G.chr16.freq.tsv.gz
+[10:03:33]   chr16 1000G: cached OK, deleted VCF
+[10:03:34] ===== chr16 DONE in 822m17s | data/ now 955M =====
+[10:03:34] ===== chr17 START =====
+[10:03:34]   chr17 Denisova: cache present, skip
+[10:03:35]   chr17 AltaiNea: cache present, skip
+[10:03:35]   chr17 Vindija33.19: downloading chr17_mq25_mapab100.vcf.gz
+[10:06:20]   chr17 Vindija33.19: extracting cache
+chr17:
+Traceback (most recent call last):
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_variants.py", line 112, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_variants.py", line 108, in main
+    extract(g, c, force=args.force)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\benne\Desktop\superarchaic-neanderthal\src\extract_variants.py", line 93, in extract
+    tmp.replace(out)
+    ~~~~~~~~~~~^^^^^
+  File "C:\Users\benne\AppData\Local\Python\pythoncore-3.14-64\Lib\pathlib\__init__.py", line 1091, in replace
+    os.replace(self, target)
+    ~~~~~~~~~~^^^^^^^^^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\benne\\Desktop\\superarchaic-neanderthal\\data\\cache\\Vindija33.19.chr17.variants.tsv.tmp.gz' -> 'C:\\Users\\benne\\Desktop\\superarchaic-neanderthal\\data\\cache\\Vindija33.19.chr17.variants.tsv.gz'
+[10:08:26]   chr17 Vindija33.19: EXTRACT FAILED — keeping VCF for inspection
+[10:08:26]   chr17 Chagyrskaya: cache present, skip
+[10:08:26]   chr17 1000G: cache present, skip
+[10:08:26] ===== chr17 DONE in 4m52s | data/ now 2.2G =====
+[10:08:26] ALL REQUESTED CHROMOSOMES PROCESSED. Caches in data/cache/ (small); raw VCFs deleted.

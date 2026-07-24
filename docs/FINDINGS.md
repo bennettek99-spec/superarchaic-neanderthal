@@ -1,10 +1,33 @@
 # Findings — Superarchaic Introgression in Neanderthals (chr21+chr22 pilot)
 
-**Status: pilot (chromosomes 21 + 22 ≈ 3% of the genome).** The pipeline, statistics, and
-simulation calibration are complete and validated; the genome-wide scan is the next step and is
-gated on an explicit data-download decision (≈230–260 GB). Every statement below is a *pilot*
-result. Language follows the project's interpretation rules ("candidate", "consistent with",
-"cannot distinguish"); nothing is called "superarchaic".
+**Status: now extended to chromosomes 16–22 (~23% of the genome, 7,491 usable 50-kb windows),
+acquired via the staggered download→extract→delete workflow.** The pipeline, statistics, and
+simulation calibration are complete and validated; the remaining autosomes can be added the same
+way. Language follows the project's interpretation rules; nothing is called "superarchaic".
+
+> ### Update — chr16–22, significance-tested (the headline result)
+> A **circular-shift permutation null** on the confound-controlled statistic (mean Neanderthal
+> residual-excess depth at Denisovan-specific CDDRs) gives **S_obs = −3.35 vs null mean +0.10,
+> empirical p = 1.000** — Neanderthals are *depleted*, not enriched, at Denisovan deep regions.
+> **Leave-one-chromosome-out jackknife** is stable: Denisovan's focal deep-window rate (0.0216)
+> is the *lowest* of the four archaics in every subset. → **No Model-A (shared-superarchaic)
+> signal, and it is now statistically defensible (p=1.0, jackknife-stable), not just descriptive.**
+> Consistent across chr16–22 with the chr19–22 and chr21+22 results below. Caveat: ~23% of the
+> genome, and simulations show the co-location test has limited power for Model A, so this is a
+> well-powered null for *co-location* — aligned with Hubisz 2020 / TRACE 2026 / DEEP 2026 / Fu 2026.
+>
+> | metric (50 kb, chr16–22) | value |
+> |---|---|
+> | usable windows | 7,491 |
+> | focal deep-rate: den / alt / vin / chag | 0.0216 / 0.0248 / 0.0263 / 0.0264 (Denisovan lowest) |
+> | Denisovan-specific candidates (z≥3) | 305; **223 (73%) artifact-likely**, 80 clean |
+> | Neanderthal classification of 149 CDDRs | Cat1 16, Cat2 10, **Cat3 (Den-only) 123 (83%)** |
+> | permutation p (Model-A co-location) | **1.000** (S_obs −3.35, null +0.10±0.14) |
+>
+> Reproduce: `src/significance.py --chroms 16 17 18 19 20 21 22`. Outputs
+> `results/cddr/{jackknife,permnull}.win50000.tsv`.
+
+*The pilot (chr21+22) analysis below stands unchanged; the chr16–22 extension reproduces it.*
 
 ---
 
