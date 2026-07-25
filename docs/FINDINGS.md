@@ -1,170 +1,256 @@
-# Findings — Superarchaic Introgression in Neanderthals (chr21+chr22 pilot)
+# Findings — Superarchaic Introgression in Neanderthals
 
-**Status: now extended to chromosomes 16–22 (~23% of the genome, 7,491 usable 50-kb windows),
-acquired via the staggered download→extract→delete workflow.** The pipeline, statistics, and
-simulation calibration are complete and validated; the remaining autosomes can be added the same
-way. Language follows the project's interpretation rules; nothing is called "superarchaic".
-
-> ### Update — chr16–22, significance-tested (the headline result)
-> A **circular-shift permutation null** on the confound-controlled statistic (mean Neanderthal
-> residual-excess depth at Denisovan-specific CDDRs) gives **S_obs = −3.35 vs null mean +0.10,
-> empirical p = 1.000** — Neanderthals are *depleted*, not enriched, at Denisovan deep regions.
-> **Leave-one-chromosome-out jackknife** is stable: Denisovan's focal deep-window rate (0.0216)
-> is the *lowest* of the four archaics in every subset. → **No Model-A (shared-superarchaic)
-> signal, and it is now statistically defensible (p=1.0, jackknife-stable), not just descriptive.**
-> Consistent across chr16–22 with the chr19–22 and chr21+22 results below. Caveat: ~23% of the
-> genome, and simulations show the co-location test has limited power for Model A, so this is a
-> well-powered null for *co-location* — aligned with Hubisz 2020 / TRACE 2026 / DEEP 2026 / Fu 2026.
->
-> | metric (50 kb, chr16–22) | value |
-> |---|---|
-> | usable windows | 7,491 |
-> | focal deep-rate: den / alt / vin / chag | 0.0216 / 0.0248 / 0.0263 / 0.0264 (Denisovan lowest) |
-> | Denisovan-specific candidates (z≥3) | 305; **223 (73%) artifact-likely**, 80 clean |
-> | Neanderthal classification of 149 CDDRs | Cat1 16, Cat2 10, **Cat3 (Den-only) 123 (83%)** |
-> | permutation p (Model-A co-location) | **1.000** (S_obs −3.35, null +0.10±0.14) |
->
-> Reproduce: `src/significance.py --chroms 16 17 18 19 20 21 22`. Outputs
-> `results/cddr/{jackknife,permnull}.win50000.tsv`.
-
-*The pilot (chr21+22) analysis below stands unchanged; the chr16–22 extension reproduces it.*
+**Scope: chromosomes 13–22 (~33% of the genome, 12,470 usable 50-kb windows), plus chr6
+in acquisition.** Language follows the project's interpretation rules; nothing is called
+"superarchaic".
 
 ---
 
-## Bottom line (answer to the success-criterion question)
+## 0. Correction to the previous headline result
 
-> *"Do Neanderthals show reproducible evidence of sharing the same candidate deeply divergent
-> genomic regions observed in Denisovans, beyond what is expected under ordinary
-> Neanderthal–Denisovan shared ancestry?"*
+The earlier version of this document reported, as its headline:
 
-**On the pilot data: No.** Three independent lines converge:
+> permutation p (Model-A co-location) = **1.000** (S_obs −3.35, null +0.10±0.14)
 
-1. **Focal-genome deep-divergence rates are equal across all four archaics** (Denisovan 3.5%,
-   Altai 3.3%, Vindija 3.5%, Chagyrskaya 3.5% of 20-kb windows with z≥3). Equality is the
-   signature of a *shared* confounder (per-window mutation-rate / coalescent-variance
-   heterogeneity that lifts every archaic-vs-African divergence together), **not** lineage-
-   specific deep ancestry.
-2. **Candidate Deep Divergence Regions are Denisovan-specific, not Neanderthal-shared.** Using
-   the confound-controlled contrast (below), 20 candidates survive artifact + multi-scale
-   filtering on chr21+22 — all in the **Model-B direction (Denisovan-specific)**. The
-   Neanderthal-comparison classifier put 8/10 (20 kb) and 2/2 (50 kb) CDDRs in **Category 3
-   (Denisovan-only)**; essentially none show the shared-with-all-Neanderthals pattern.
-3. **The strongest apparent Denisovan-specific windows are ≥65% artifacts** (repeat /
-   low-mappability / segmental-duplication), i.e. paralog-mismapping inflating one genome's
-   divergence — not ancestry.
+**That result was an artefact of the test's own selection rule and is withdrawn.**
 
-So on chr21+22 there is **no Model-A (Neandersovan / shared-superarchaic) signal**, and the
-residual Denisovan-specific candidates are (a) the *expected* Model-B direction (consistent with
-Hubisz 2020 / Fu 2026 / DEEP 2026) and (b) not yet distinguishable from a heavy-tailed null on
-3% of the genome. **A careful null is the honest pilot outcome.**
+`significance.py` selected candidate windows on
+
+    z_den_excess ≥ 3,  where  den_excess = div_den_afr − mean(div_alt_afr, div_vin_afr, div_chag_afr)
+
+and then used, as the test statistic, the mean Neanderthal residual depth at those same
+windows. Selecting windows for having high Denisovan **and low Neanderthal** divergence
+and then reporting that Neanderthal divergence is low there cannot come out any other
+way. S_obs = −3.35 against a null s.d. of 0.14 is ~25 σ — a statement about the
+selection rule, not about Neanderthals. The p = 1.000 was never evidence against Model A.
+
+There was a second, deeper problem. The whole pilot was built on `den_excess`, which
+**cancels Model A exactly**: under Model A superarchaic ancestry entered the common
+Neanderthal+Denisovan ancestor, so both terms rise together and the contrast returns
+zero. Model A was structurally invisible to the pilot's primary statistic. The reported
+~6% power of the co-location test was a symptom of this, not the cause.
+
+Both are fixed below. `src/significance.py` now selects on Denisovan depth alone and is
+retained only as a Model-B probe; `--show-legacy` reproduces the old artefact on demand.
+
+### The co-location test cannot be rescued at all
+
+De-biasing it does not produce a usable test — it produces a smaller artefact. With
+candidates selected on Denisovan depth alone and a residual taken in fine quantile
+bins, S_obs = **+0.415, p = 0.004** — the *opposite sign* to the withdrawn result. But a
+z ≥ 3 threshold cuts **through** a residual bin, so the candidates are the upper part of
+the bins they fall in and inherit a positive residual by construction. Selecting the
+same number of windows at **whole-bin boundaries** collapses S to **+0.03 … +0.10**:
+
+| candidate set | S |
+|---|---|
+| z ≥ 3 threshold (126 windows) | **+0.415** |
+| top 1 whole bin (50 windows) | +0.032 |
+| top 2 whole bins (100 windows) | +0.037 |
+| top 3 whole bins (150 windows) | +0.100 |
+
+So the p = 0.004 is still mostly selection. And the problem is structural, not a matter
+of finer binning: **condition fully on Denisovan depth and the test is vacuous by
+construction** (the residual mean inside a stratum is zero by definition); **condition
+less and it is dominated by the ~0.73 Denisovan–Neanderthal correlation that shared
+ancestry produces under every model, including the null.** Its permutation null is
+simply the wrong null.
+
+This is why the redesign does not try to fix the co-location test. It replaces it.
 
 ---
 
-## 1. The pipeline is validated (correct population genetics)
+## 1. What changed methodologically
 
-On the common callable mask, median pairwise divergence per bp (chr21+22, 50 kb windows) is
-textbook-ordered:
+### An external mutation-rate denominator (`src/ratemap.py`)
+Per-window mutation-rate heterogeneity inflates every archaic-vs-modern divergence
+together. The pilot removed it by contrasting the archaics against each other — which
+also removed Model A. The replacement is a denominator that involves no archaic genome
+at all: the density of substitutions on the human lineage since the human–chimp
+ancestor, i.e. positions where hg19 differs from the Ensembl EPO ancestral sequence,
+inside the common callable mask.
 
-| Comparison | median divergence/bp | expectation |
-|---|---|---|
-| archaic vs African (den/alt/vin/chag) | 0.00145–0.00151, **all ≈ equal** | all archaics ~equidistant from Africans ✓ |
-| Denisovan vs each Neanderthal | 0.00112–0.00115 | Nea–Den < archaic–modern ✓ |
-| Neanderthal vs Neanderthal | 0.00018–0.00023 | within-clade smallest ✓ |
+Measured median `sub_rate` is **0.0058–0.0068 per bp** across chr13–22 — the expected
+value for ~6 Myr of human-lineage evolution, with ancestral coverage of 94–99% of the
+callable mask. At 50 kb that is ~300 substitutions per window (~6% Poisson noise)
+against ~72 for `div_den_afr`, so it is a near-noiseless local rate estimate.
 
-The archaic-vs-African values converge only **after** switching to a common intersection mask;
-per-genome masks (2014 Altai/Denisovan vs 2016–18 Vindija/Chagyrskaya) gave a spurious
-Vindija/Chagyrskaya deficit (0.0016 vs 0.0023) — a methodological trap this pipeline now avoids.
+It correlates **+0.40, +0.38, +0.37, +0.38** with Denisovan, Altai, Vindija and
+Chagyrskaya divergence respectively — near-identical across all four, which is the
+signature of a genuinely shared confound and confirms the mechanism.
 
-## 2. Raw divergence is confounded; the contrast is not
+**But it is not the whole story, and this corrects a claim in the pilot.** Normalizing
+by `sub_rate` moves the cross-archaic correlation only from 0.72 to 0.70. Mutation rate
+accounts for ~16% of the shared variance; the rest is shared *genealogy* — the archaics
+share ancestry and are compared against the same African panel, so their divergences are
+correlated under every model, including the null. "Per-window rate variation lifts all
+archaics together" was true but minor. Consequently a rate denominator alone is not
+enough: the null has to come from simulation, which is what §3 supplies.
 
-Because per-window rate variation inflates all archaic divergences together, a deep-divergence
-window is **not** per se lineage-specific. The unconfounded statistic for Denisovan-specific
-depth (the Model-B signature) is the contrast
+A free by-product: hg19's soft-masking is RepeatMasker, so `repeat_frac` now gives the
+genome-wide per-window repeat track that §7 of the previous version listed as missing.
 
-    den_excess = div_den_afr − mean(div_alt_afr, div_vin_afr, div_chag_afr)
+### Polarized site patterns (`src/scan_windows.py`)
+Each site is polarized against the ancestral allele (CAnc from the Altai/Denisovan INFO,
+falling back to the 1000G EPO `AA`) and tallied into lineage-specific derived-allele
+patterns, conditioned on all four archaics being callable and the derived allele being
+absent from Africans:
 
-which cancels the shared component. **Simulation validates it**: across msprime Models 0–4
-(20–30 Mb, seeded), the mean `den_excess` is largest under **M2 (Denisovan-only)** and smallest
-under **M0 (null)** — the contrast tracks genuine Denisovan-specific ancestry.
+| pattern | meaning |
+|---|---|
+| `pat_nea_all` | derived in **all three Neanderthals**, ancestral in Denisovan — the Model-A signature |
+| `pat_den_only` | derived in Denisovan alone — the Model-B signature |
+| `pat_all_arch` | derived in all four — ordinary Nea–Den shared ancestry |
+| `pat_alt_only` / `pat_vin_only` / `pat_chag_only` | single-Neanderthal private — drift/error controls |
 
-## 3. Simulation calibration (Models 0–4) — and a key power limit
+These count deep-branch mutations. Their **clustering**, not their mean, is what
+separates introgressed haplotype blocks from incomplete lineage sorting — the mean is
+confounded with the split times.
 
-| Model | CDDR rate (z≥3 on den_afr) | %CDDRs classed "shared w/ Neanderthals" |
-|---|---|---|
-| M0 none (null) | 0.007 | 8% |
-| M1 Neandersovan (**Model A**) | 0.020 | **6%** |
-| M2 Denisovan-only (**Model B**) | 0.022 | 3% |
-| M3 separate pulses | 0.027 | 4% |
-| M4 ancient structure | 0.036 | 25% |
+### Locus-free tests (`src/modelA.py`)
+- **T1 clade clustering** — the headline. Model A predicts `pat_nea_all` clusters in
+  blocks; the null predicts it is scattered. Reported as a *contrast* against control
+  patterns so that rate, Ne and mappability, which cluster everything alike, cancel.
+- **T2 tail symmetry** — deep-tail mass of rate-normalized depth per lineage. Rules
+  Model B in or out. It **cannot** test Model A, which lifts all four lineages equally.
+  The pilot's "all four focal rates are equal" observation was therefore never evidence
+  against Model A, and is no longer presented as such.
+- **T3 cross-lineage covariance** — the aggregate, unthresholded version of the
+  co-location test.
 
-Two calibration lessons that shape the whole design:
-- **The co-located-sharing test has low power for Model A.** Even when Model A is *true* (M1),
-  only 6% of Denisovan CDDRs are classed "shared" — because superarchaic ancestry deposited in
-  the Neandersovan ancestor is retained at *different loci* in Neanderthals vs Denisovans after
-  ~400 ky of drift/recombination. So *co-location* is the wrong expectation for Model A; the
-  right test is whether Neanderthals show their own genome-wide deep-divergence **excess** (they
-  do not, beyond the shared confound — see Bottom line #1).
-- **Ancient structure (M4) is the strongest confounder** (highest CDDR rate *and* highest
-  apparent "sharing"), reproducing the long-standing Rogers-vs-structure ambiguity. Any positive
-  claim must be defended against it.
-- The msprime null (constant μ, constant recombination) **underestimates real overdispersion**
-  (real z≥3 rate ~3.5% vs sim ~0.7%), so the sim gives *qualitative* calibration only; a
-  genome-wide **empirical** null + block-jackknife is required for real significance.
+Uncertainty throughout is a Busing–Meijer–van der Leeden weighted block jackknife over
+5 Mb blocks (147 blocks on chr13–22), which respects linkage.
 
-## 4. Candidate Deep Divergence Region (CDDR) catalog — Denisovan-specific
+### Statistic design, twice corrected
+Quasi-Poisson φ is **not** comparable across patterns of different abundance, since
+Var = μ + αμ² gives φ = 1 + αμ. The contrast is therefore built on the mean-scale-free
+α (unit-tested for invariance). A noise-corrected latent autocorrelation is reported
+alongside it, because raw autocorrelation of counts is attenuated in proportion to how
+rare a pattern is.
 
-`results/cddr/candidate_catalog.win50000.tsv` (57 windows, z_den_excess ≥ 3 on chr21+22):
+---
 
-| Evidence tier | n | meaning |
-|---|---|---|
-| Artifact-likely | 37 (65%) | repeat / low-mappability / segdup / low-callability dominated |
-| Moderate | 20 | passes artifact filter **and** replicates across ≥1 other window size |
-| Weak / Insufficient / Strong | 0 | — |
+## 2. Observed results (chr13–22, 50 kb, MHC excluded)
 
-The 20 "Moderate" candidates are **Denisovan-specifically deep** and survive the alternative-
-explanation filter — they are legitimate *Model-B-direction* candidates. **None are
-Neanderthal-shared** (no Model-A candidates). They are **not** significance-tested: on 3% of the
-genome with a heavy-tailed null and no block-jackknife, they remain candidates, not findings.
+| pattern | total | per window | α (relative dispersion) | lag-1 autocorr |
+|---|---|---|---|---|
+| `pat_nea_all` | 49,567 | 3.97 | 0.690 ± 0.037 | +0.425 |
+| `pat_den_only` | 132,810 | 10.65 | 0.127 ± 0.006 | +0.289 |
+| `pat_all_arch` | 14,912 | 1.20 | 2.982 ± 0.149 | +0.375 |
+| `pat_alt_only` | 25,776 | 2.07 | 0.576 ± 0.031 | +0.312 |
+| `pat_vin_only` | 4,091 | 0.33 | 3.330 ± 0.279 | +0.291 |
+| `pat_chag_only` | 2,327 | 0.19 | 6.579 ± 2.094 | +0.247 |
 
-## 5. Alternative-explanation assessment (per the spec)
+**T1 contrast: α(`pat_nea_all`) − α(`pat_alt_only`) = +0.114 ± 0.046 (z = +2.49).**
 
-| Alternative | How addressed in the pilot | Verdict on pilot candidates |
-|---|---|---|
-| Mapping / paralog / segmental duplication | `Map20`, `RM`, `UR` covariates; ≥65% of top windows flagged | **dominant** explanation of the extreme tail |
-| Low mappability / callability | mq25/mapab100 common mask; `callable_frac` gate | controlled at site level |
-| Mutation-rate variation | the `den_excess` contrast cancels shared per-window rate | this is *why* the contrast is used |
-| Ancient population structure | M4 simulation shows it mimics/inflates signal | **unresolved** — needs genome-wide + ARG |
-| Incomplete lineage sorting | Nea–Nea and Den–Nea baselines; contrast design | baseline, not excess |
-| aDNA damage | transversion-only pass available (`config.transversions_only_variant`) | pending in scaled run |
-| Reference bias / low complexity / CpG | `CpG`, conservation covariates recorded | recorded, not yet decisive |
-| Contamination | high-coverage archaics; not re-derived here | assumed handled upstream |
+**T2:** Denisovan minus Neanderthal-mean tail mass = +0.0024 ± 0.0012 (z = +1.99) —
+a weak Model-B-direction excess.
 
-No candidate region "survives" as superarchaic: the extreme tail is artifact-dominated, and the
-cleaner residual is (a) Denisovan-specific and (b) not distinguishable from ancient structure or
-a heavy-tailed null on this data slice.
+**T3:** corr(R_den, R_nea) = +0.727 ± 0.013.
 
-## 6. Final evidence ranking
+---
 
-- **Model A (superarchaic → Neanderthals too): no evidence** on the pilot. Not detected by any
-  of the three lines above; simulation shows the co-location test is under-powered for it, so
-  "not detected" is weaker than "excluded" — the genome-wide focal-rate test is the decisive one.
-- **Model B (Denisovan-specific): weak, expected, unconfirmed candidates.** 20 Denisovan-specific
-  regions survive artifact filtering, in the direction the literature predicts, but not
-  significance-tested and not yet separated from ancient structure.
-- **Dominant real signal on chr21+22: shared per-window rate variation + mapping artifacts** —
-  i.e. the alternative explanations, not archaic introgression.
+## 3. Simulation calibration — what the T1 contrast means
 
-## 7. What the genome-wide analysis must add (to actually answer the question)
+All five models were run through the **identical** statistics module (10 seeds × 20 Mb
+each), with per-window mutation rates resampled from the *measured* rate map rather than
+held constant, and with the African panel matched to 1000G's 661 individuals (panel size
+materially changes the "absent in Africans" filter).
 
-1. Scale to all autosomes (extraction ≈ 2 h; scan hours) → power + a real empirical null.
-2. **Block jackknife / leave-one-chromosome-out** significance on `den_excess` and on the
-   focal-genome CDDR-rate contrast (the decisive Model-A test).
-3. Polarized **private-derived-allele density** and local-genealogy / TMRCA at surviving
-   candidates (needs the ancestral FASTA, now downloaded) to separate deep-ancestry from rate.
-4. Explicit **ancient-structure (M4) model fitting** — the one confounder the pilot cannot rule
-   out — ideally with an ARG method (ARGweaver-D / SINGER) at candidate loci.
-5. Genome-wide segmental-duplication / RepeatMasker tracks for exact per-window artifact masking.
+| statistic | M0 null | **M1 = Model A** | M2 = Model B | M3 separate | M4 structure | **observed** |
+|---|---|---|---|---|---|---|
+| α(nea_all) − α(alt_only) | −0.017 | **+0.112** | −0.003 | −0.554 | +0.152 | **+0.114** |
+| corr(R_den, R_nea) | 0.830 | 0.722 | 0.682 | 0.582 | 0.664 | 0.727 |
+| legacy % co-located | 81% | 54% | 30% | 25% | 60% | 62% |
 
-**Reproduce:** `src/download_pilot.sh` → `extract_variants.py` → `extract_modern.py` →
-`scan_windows.py` → `neanderthal_compare.py` → `rank_candidates.py`; `sims/superarchaic_sim.py
---mode discriminate` for calibration. Tests: `python tests/test_pipeline.py` (8 pass).
+The T1 contrast behaves as designed: **≈0 under the null and under Model B, clearly
+positive under Model A.** The observed +0.114 sits essentially on M1 (+0.112) and away
+from M0 (−0.017) and M2 (−0.003).
+
+### Why this is *suggestive*, not a result
+
+1. **M4 (ancient structure) produces the same signal** (+0.152). Continuous deep
+   structure without any discrete pulse mimics Model A on this statistic. This is the
+   long-standing Rogers-versus-structure ambiguity, and nothing here resolves it.
+2. **The contrast depends on which drift control is used.** The three
+   single-Neanderthal patterns are supposed to be exchangeable but give α = 0.58
+   (Altai), 3.33 (Vindija), 6.58 (Chagyrskaya). Against Vindija or Chagyrskaya the
+   contrast reverses sign (−2.64, −5.89). Altai is the only one with enough private
+   sites (~26k vs ~4k and ~2k — it split from the Vindija/Chagyrskaya ancestor ~150 ka,
+   giving a far longer private branch) for α to be well determined, and the simulated
+   comparison uses the same control, so the contrast is at least internally consistent.
+   It is still a choice, and it is reported rather than buried.
+3. **The simulator does not yet reproduce the observed pattern spectrum.**
+   `pat_all_arch` comes out ~8× too abundant, meaning the Neandersovan branch length
+   and Ne are unfitted. The calibration is trustworthy in shape, not in absolute scale.
+4. **One point estimate per model.** The z values come from a block jackknife inside a
+   single simulated dataset, not from a distribution over independent replicates, so
+   there is no false-positive rate or power figure yet.
+   `sims/power_calibration.py` supplies that and is ready to run.
+
+### What it is not
+The contrast is **robust to data quality**, which removes the most obvious artefactual
+explanation:
+
+| subset | n | contrast | z |
+|---|---|---|---|
+| all windows | 12,470 | +0.114 | +2.49 |
+| callable_frac ≥ 0.4 | 11,386 | +0.116 | +2.61 |
+| callable_frac ≥ 0.5 | 8,752 | +0.101 | +2.17 |
+| callable_frac ≥ 0.6 | 3,950 | +0.058 | +0.97 |
+| balanced callability across genomes | 12,378 | +0.113 | +2.45 |
+| non-artifact (Map20 ≥ 0.7, RM ≤ 0.6) | 5,199 | +0.123 | +2.05 |
+| repeat_frac < 0.5 | 6,619 | +0.121 | +2.25 |
+
+The attenuation in the strictest subset is consistent with the loss of two-thirds of the
+windows rather than with the signal being quality-driven.
+
+---
+
+## 4. Bottom line
+
+> *"Do Neanderthals show reproducible evidence of sharing the same candidate deeply
+> divergent genomic regions observed in Denisovans, beyond what is expected under
+> ordinary Neanderthal–Denisovan shared ancestry?"*
+
+**Co-location: unanswerable, not merely negative — and it was always the wrong
+question.** Under Model A the two lineages carry deep ancestry at *different* loci after
+~420 ky, so the test has ~6% power by construction; and as §0 shows it has no valid null
+at any conditioning level. The pilot's apparent significance was a selection artefact,
+and the de-biased version is a smaller one.
+
+**Neanderthal-clade deep-ancestry clustering: a weak positive signal, consistent with
+Model A and equally consistent with ancient structure.** The Model-A-diagnostic
+statistic sits where a true Model A would put it and away from the null and Model B, is
+stable across data-quality filters, but is z ≈ 2.5 on a third of the genome, depends on
+the choice of drift control, rests on an unfitted demography, and does not separate
+Model A from ancient population structure.
+
+**This is a candidate signal that did not exist before, not a finding.** The previous
+version reported a confident null that was an artefact; this version reports a weak
+positive that is honestly bounded. Neither licenses a claim about superarchaic ancestry
+in Neanderthals.
+
+---
+
+## 5. What would settle it
+
+1. **`sims/power_calibration.py --reps 20 --jobs 6`** (~3 h) — replicate-level FPR and
+   power, and where the observed value falls in each model's distribution. Until this
+   runs, "z = 2.49" has no calibrated false-positive rate behind it.
+2. **Fit the demography** so the simulated pattern spectrum matches the observed one
+   (chiefly `pat_all_arch`). Power numbers are not quantitative until this is closed.
+3. **An explicit ancient-structure model** fitted to the data. This is the one
+   confounder that reproduces the signal, and no amount of extra sequence removes it.
+4. **The remaining autosomes.** Note this is the *smallest* available gain: going from
+   33% to 100% of the genome shrinks the standard error by only ~1.7×, taking z ≈ 2.5
+   to ≈ 4.3 *if the effect is real*. The method changes above were worth far more than
+   the data, which is why they came first.
+5. **chr6/MHC as a positive control.** The MHC carries trans-species balancing
+   selection — genuinely ancient haplotypes that are *not* archaic introgression. A
+   correct rate-normalized method should flag it as ancient and shared, not
+   archaic-specific. It is excluded from the primary scan and reported separately.
+
+**Reproduce:** `src/stagger.sh <chroms>` → `src/scan_windows.py --jobs 4` →
+`src/modelA.py --sensitivity` → `sims/superarchaic_sim.py` battery →
+`sims/power_calibration.py`. Tests: `python tests/test_pipeline.py` (16 pass).

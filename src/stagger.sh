@@ -43,7 +43,9 @@ fetch(){ # url out  — resume; abort+retry a stalled connection (no 33-min hang
     loc=$(stat -c %s "$out" 2>/dev/null || echo 0)
     [[ "$loc" == "$rem" ]] && return 0
   fi
-  curl -fL -C - --retry 8 --retry-delay 5 --retry-all-errors \
+  # --no-progress-meter: the interactive meter wrote thousands of carriage-return
+  # lines into stagger.log, which made the log unreadable and unusable with grep.
+  curl -fL -C - --retry 8 --retry-delay 5 --retry-all-errors --no-progress-meter \
     --connect-timeout 30 --speed-limit 50000 --speed-time 60 \
     --max-time 7200 -o "$out" "$url"
 }
@@ -94,6 +96,18 @@ for C in "$@"; do
     else
       say "  chr$C 1000G: DOWNLOAD/gzip FAILED (partial kept for resume)"
     fi
+  fi
+  # --- mutation-rate map: needs the masks above, so it runs last ---
+  # Downloads the hg19 chromosome FASTA (~50-90 MB), counts human-vs-ancestral
+  # substitutions per window, deletes the FASTA. This is the rate denominator that
+  # lets the Model-A tests control for mutation-rate variation without contrasting
+  # the archaic genomes against each other.
+  if [[ ! -f "$ROOT/results/ratemap/rate.chr$C.win50000.tsv" ]]; then
+    say "  chr$C ratemap: building"
+    PYTHONIOENCODING=utf-8 "$PY" "$ROOT/src/ratemap.py" --chroms "$C" >>"$LOG" 2>&1 \
+      && say "  chr$C ratemap ok" || say "  chr$C ratemap FAILED"
+  else
+    say "  chr$C ratemap: present, skip"
   fi
   dt=$(( $(date +%s) - t0 ))
   disk=$(du -sh "$ROOT/data" 2>/dev/null | awk '{print $1}')

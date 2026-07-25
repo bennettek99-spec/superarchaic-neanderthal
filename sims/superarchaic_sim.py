@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -32,6 +33,7 @@ import msprime
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "results" / "sims"
+RATEDIR = ROOT / "results" / "ratemap"
 sys.path.insert(0, str(ROOT / "src"))
 from vcflib import robust_z
 
@@ -93,8 +95,16 @@ def build(model: str, f_super: float = 0.04, f_den: float = 0.03,
     return d
 
 
+# The African panel size is NOT cosmetic. Every polarized pattern is conditioned on the
+# derived allele being ABSENT from Africans, and that filter is far easier to pass
+# against 20 individuals than against the 661 AFR individuals behind 1000G's AFR_AF.
+# With a 20-individual panel the simulated pat_all_arch came out ~8x the observed rate
+# purely from panel size. Matching 1000G makes the simulated and real patterns
+# comparable, which is the whole point of running both through one statistics module.
+N_AFR_1000G, N_EUR_1000G = 661, 503
+
 SAMPLES = [("DEN", 1, S_DEN), ("ALTAI", 1, S_ALTAI), ("VIN", 1, S_VIN),
-           ("CHAG", 1, S_CHAG), ("AFR", 20, 0), ("EUR", 20, 0), ("CHIMP", 1, 0)]
+           ("CHAG", 1, S_CHAG), ("AFR", N_AFR_1000G, 0), ("EUR", 20, 0), ("CHIMP", 1, 0)]
 
 
 def simulate(model, seq_len=20_000_000, mu=1.25e-8, rho=1e-8, seed=1, f_super=0.04):
@@ -104,6 +114,198 @@ def simulate(model, seq_len=20_000_000, mu=1.25e-8, rho=1e-8, seed=1, f_super=0.
                               recombination_rate=rho, random_seed=seed)
     mts = msprime.sim_mutations(ts, rate=mu, random_seed=seed + 1)
     return mts
+
+
+# ===========================================================================
+# Realistic-heterogeneity simulation emitting the REAL window-table schema.
+#
+# The pilot's simulated null produced a z>=3 window rate of ~0.7% against ~3.5%
+# observed, so it could only calibrate qualitatively: it assumed a constant mutation
+# rate and constant recombination, and real genomes have neither. Here the per-window
+# mutation-rate multipliers are RESAMPLED FROM THE MEASURED human-vs-ancestral
+# substitution map (results/ratemap/), so the simulated overdispersion is the observed
+# overdispersion rather than a guess. Recombination gets lognormal variation, which
+# controls how long a coalescent block stays intact and therefore how much the
+# clustering statistics scatter under the null.
+#
+# The output columns match results/tables/windows.chr*.win*.tsv exactly, so
+# src/modelA.py runs on simulated and real data through the same code path -- which is
+# what converts the test battery into calibrated power and false-positive rates.
+# ===========================================================================
+
+EMPIRICAL_SUB_RATE = 0.0068          # median human-vs-ancestral substitutions/bp
+
+
+def empirical_rate_multipliers(n_windows, win, rng, fallback_cv=0.25):
+    """Per-window mutation-rate multipliers resampled from the measured rate map.
+
+    Falls back to a lognormal with `fallback_cv` when no rate map has been built yet,
+    so the simulator still runs on a fresh checkout.
+    """
+    files = sorted(RATEDIR.glob(f"rate.chr*.win{win}.tsv"))
+    vals = []
+    for f in files:
+        d = pd.read_csv(f, sep="\t", usecols=["sub_rate", "anc_valid_bp"])
+        d = d[(d["anc_valid_bp"] > 0.3 * win) & np.isfinite(d["sub_rate"])]
+        vals.append(d["sub_rate"].to_numpy())
+    if vals:
+        v = np.concatenate(vals)
+        v = v[np.isfinite(v) & (v > 0)]
+        m = np.median(v)
+        mult = rng.choice(v / m, size=n_windows, replace=True)
+        return mult, "empirical"
+    sigma = np.sqrt(np.log(1 + fallback_cv ** 2))
+    return rng.lognormal(-0.5 * sigma ** 2, sigma, n_windows), "lognormal-fallback"
+
+
+def _rate_map(mult, win, base, seq_len):
+    pos = np.arange(len(mult) + 1, dtype=float) * win
+    pos[-1] = max(seq_len, pos[-2] + 1)
+    return msprime.RateMap(position=pos, rate=base * mult)
+
+
+def simulate_hetero(model, seq_len=30_000_000, win=50_000, mu=1.25e-8, rho=1e-8,
+                    seed=1, f_super=0.06, rate_hetero=True, recomb_cv=0.6):
+    """Ancestry + mutations under heterogeneous rates. Returns (mts, rate_multipliers)."""
+    rng = np.random.default_rng(seed)
+    nwin = int(np.ceil(seq_len / win))
+    if rate_hetero:
+        mult, _src = empirical_rate_multipliers(nwin, win, rng)
+        sigma = np.sqrt(np.log(1 + recomb_cv ** 2))
+        rmult = rng.lognormal(-0.5 * sigma ** 2, sigma, nwin)
+    else:
+        mult = np.ones(nwin)
+        rmult = np.ones(nwin)
+    demo = build(model, f_super=f_super, f_den=f_super, f_nea=f_super)
+    samples = [msprime.SampleSet(n, population=p, time=_g(t)) for p, n, t in SAMPLES]
+    ts = msprime.sim_ancestry(
+        samples=samples, demography=demo, sequence_length=seq_len,
+        recombination_rate=_rate_map(rmult, win, rho, seq_len),
+        random_seed=seed, discrete_genome=True)
+    mts = msprime.sim_mutations(ts, rate=_rate_map(mult, win, mu, seq_len),
+                                random_seed=seed + 100000)
+    return mts, mult
+
+
+def sim_window_table(mts, mult, win, seq_len, seed, chrom="S"):
+    """Compute the SAME per-window statistics the real scan produces.
+
+    msprime states are already polarized (0 ancestral, 1 derived), so the polarized
+    site patterns are exact here -- which is what makes the simulated values a valid
+    calibration for the real ones, where polarization comes from the EPO ancestral call.
+    """
+    idx = _hap_index(mts)
+    pos = np.array([v.site.position for v in mts.variants()])
+    G = (mts.genotype_matrix() > 0)
+    nbins = int(np.ceil(seq_len / win))
+    wid = np.clip((pos // win).astype(int), 0, nbins - 1)
+
+    def dosage(pop):                       # derived alleles carried (0..2) per site
+        return G[:, idx[pop]].sum(axis=1)
+
+    def freq(pop):
+        return G[:, idx[pop]].mean(axis=1)
+
+    p_afr = freq("AFR")
+    p_eur = freq("EUR")
+    arch = {"den": "DEN", "alt": "ALTAI", "vin": "VIN", "chag": "CHAG"}
+    dos = {k: dosage(v) for k, v in arch.items()}
+    nhap = {k: len(idx[v]) for k, v in arch.items()}
+
+    site = {}
+    for a, b in [("den", "alt"), ("den", "vin"), ("den", "chag"),
+                 ("alt", "vin"), ("alt", "chag"), ("vin", "chag")]:
+        pa, pb = dos[a] / nhap[a], dos[b] / nhap[b]
+        site[f"div_{a}_{b}"] = pa * (1 - pb) + pb * (1 - pa)
+    for s in arch:
+        ps = dos[s] / nhap[s]
+        site[f"div_{s}_afr"] = ps * (1 - p_afr) + (1 - ps) * p_afr
+        site[f"div_{s}_eur"] = ps * (1 - p_eur) + (1 - ps) * p_eur
+
+    der = {s: dos[s] > 0 for s in arch}
+    afr0 = p_afr == 0
+    NEA_ALL = der["alt"] & der["vin"] & der["chag"]
+    pat = {
+        "n_pol": np.ones(len(pos), bool),
+        "n_der_any": der["den"] | NEA_ALL | der["alt"] | der["vin"] | der["chag"] | (p_afr > 0),
+        "pat_den_only": afr0 & der["den"] & ~der["alt"] & ~der["vin"] & ~der["chag"],
+        "pat_nea_all": afr0 & ~der["den"] & NEA_ALL,
+        "pat_nea_any": afr0 & ~der["den"] & (der["alt"] | der["vin"] | der["chag"]),
+        "pat_all_arch": afr0 & der["den"] & NEA_ALL,
+        "pat_alt_only": afr0 & ~der["den"] & der["alt"] & ~der["vin"] & ~der["chag"],
+        "pat_vin_only": afr0 & ~der["den"] & ~der["alt"] & der["vin"] & ~der["chag"],
+        "pat_chag_only": afr0 & ~der["den"] & ~der["alt"] & ~der["vin"] & der["chag"],
+    }
+
+    out = {"chrom": [str(chrom)] * nbins,
+           "start": np.arange(nbins) * win,
+           "end": np.arange(nbins) * win + win}
+    for k, v in site.items():
+        out[k] = np.bincount(wid, weights=v, minlength=nbins)[:nbins] / win
+    for k, v in pat.items():
+        out[k] = np.bincount(wid[v], minlength=nbins)[:nbins]
+
+    df = pd.DataFrame(out)
+    # Simulated rate denominator, measured the same noisy way as the real one: a
+    # Poisson count of human-lineage substitutions in the window, not the true rate.
+    rng = np.random.default_rng(seed + 999)
+    lam = mult[:nbins] * EMPIRICAL_SUB_RATE * win
+    hum_sub = rng.poisson(lam)
+    df["anc_valid_bp"] = win
+    df["hum_sub"] = hum_sub
+    df["sub_rate"] = hum_sub / win
+    df["true_rate_mult"] = mult[:nbins]
+    df["callable_common"] = win
+    df["callable_frac"] = 1.0
+    df["callable_frac_den"] = 1.0
+    for s in arch:
+        df[f"callable_{s}"] = win
+    for c in ("mean_map20", "mean_rm", "mean_ur", "mean_bsc"):
+        df[c] = np.nan
+    df["repeat_frac"] = 0.0
+    return df
+
+
+def _one_rep(job):
+    model, seed, seq_len, win, f_super, rate_hetero = job
+    mts, mult = simulate_hetero(model, seq_len=seq_len, win=win, seed=seed,
+                                f_super=f_super, rate_hetero=rate_hetero)
+    return sim_window_table(mts, mult, win, seq_len, seed, chrom=f"{seed}")
+
+
+def battery(models=("M0_none", "M1_neandersovan", "M2_denisovan_only",
+                    "M3_separate", "M4_ancient_structure"),
+            seeds=(1, 2, 3), seq_len=30_000_000, win=50_000, f_super=0.06,
+            rate_hetero=True, jobs=1, tag=""):
+    """Run each model through the REAL statistics battery (src/modelA.py).
+
+    Each seed is an independent 'chromosome', so the block jackknife and the
+    per-chromosome circular shifts behave as they do on real data.
+    """
+    sys.path.insert(0, str(ROOT / "src"))
+    import modelA
+
+    OUT.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for m in models:
+        jobs_list = [(m, sd, seq_len, win, f_super, rate_hetero) for sd in seeds]
+        if jobs > 1 and len(jobs_list) > 1:
+            with ProcessPoolExecutor(max_workers=jobs) as ex:
+                dfs = list(ex.map(_one_rep, jobs_list))
+        else:
+            dfs = [_one_rep(j) for j in jobs_list]
+        df = pd.concat(dfs, ignore_index=True)
+        p = OUT / f"windows_{m}{tag}.tsv"
+        df.to_csv(p, sep="\t", index=False, float_format="%.6g")
+        sub, _ = modelA.load(tables=[p], win=win, exclude_special=False)
+        summ = modelA.run(sub, None, win=win, label=f"{m}{tag}")
+        summ["model"] = m
+        summ["f_super"] = f_super
+        rows.append(summ)
+    s = pd.DataFrame(rows)
+    s.to_csv(OUT / f"battery_summary{tag}.tsv", sep="\t", index=False, float_format="%.6g")
+    print(f"\nwrote {OUT/f'battery_summary{tag}.tsv'}")
+    return s
 
 
 def _hap_index(mts):

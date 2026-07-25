@@ -1,0 +1,5 @@
+model	rep	f_super	n_windows	contrast_pat_alt_only	contrast_z	corr_den_nea	alpha_pat_nea_all	alpha_pat_alt_only	alpha_pat_den_only	alpha_pat_all_arch	mean_pat_nea_all	mean_pat_all_arch	mean_pat_den_only	tail_contrast_z	legacy_frac_shared
+M0_none	0	0.06	600	0.0739982	1.69264	0.819705	0.320221	0.246223	0.100348	0.416166	8.71167	9.85167	15.9233	0	0.625
+M0_none	1	0.06	600	0.0250884	0.437251	0.850587	0.264401	0.239312	0.0871803	0.37446	8.2	10.865	15.01	0	1
+M1_neandersovan	0	0.06	600	0.248868	3.44787	0.729767	0.523842	0.274974	0.186375	0.466512	10.2833	10.785	17.4433	-1	0.5
+M1_neandersovan	1	0.06	600	-0.00252293	-0.0346874	0.729804	0.334732	0.337255	0.210426	0.555942	9.675	10.21	17.105	0.161165	0.5

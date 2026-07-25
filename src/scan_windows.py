@@ -16,6 +16,29 @@ Method (efficient all-sites handling):
     invariant hom-reference sites contribute zero and are filled from the masks.
 All divergence algebra is vectorized over sites (bases encoded as 0..3).
 
+POLARIZED SITE PATTERNS (added for the Model-A test battery)
+------------------------------------------------------------
+Divergence alone cannot separate Model A from the null, because superarchaic ancestry
+entering the Neanderthal+Denisovan ancestor raises Denisovan AND Neanderthal depth
+together -- any Den-vs-Nea contrast cancels it by construction. So each site is also
+POLARIZED against the ancestral allele (CAnc from the Altai/Denisovan INFO, falling
+back to the 1000G EPO AA field) and tallied into lineage-specific derived-allele
+patterns, restricted to sites where all four archaics are callable and the derived
+allele is absent from Africans:
+
+  pat_nea_all   derived in ALL THREE Neanderthals, ancestral in Denisovan
+                -> the Model-A signature: deep ancestry retained on the Neanderthal
+                   side of the 420 ka split but drifted out of Denisovans
+  pat_den_only  derived in Denisovan alone            -> the Model-B signature
+  pat_all_arch  derived in all four                   -> ordinary Nea-Den shared ancestry
+  pat_{alt,vin,chag}_only  single-Neanderthal private -> drift/error baseline
+
+These are counts of DEEP-BRANCH mutations, and their per-window CLUSTERING (not their
+mean, which is confounded with the split time) is what distinguishes introgressed
+haplotype blocks from incomplete lineage sorting. Compositions such as
+pat_nea_all / n_der_any are rate-free: local mutation rate scales numerator and
+denominator alike.
+
 Outputs:
   results/tables/windows.chr{C}.win{W}.tsv      (every window's metrics)
   results/cddr/cddr.chr{C}.win{W}.tsv           (flagged CDDRs)
@@ -24,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -38,57 +62,106 @@ CACHE = ROOT / "data" / "cache"
 MASKS = ROOT / "data" / "masks"
 TABLES = ROOT / "results" / "tables"
 CDDRDIR = ROOT / "results" / "cddr"
+RATEDIR = ROOT / "results" / "ratemap"
 
 ARCHAICS = ["Denisova", "AltaiNea", "Vindija33.19", "Chagyrskaya"]
 SHORT = {"Denisova": "den", "AltaiNea": "alt", "Vindija33.19": "vin", "Chagyrskaya": "chag"}
 # mask files follow the EVA FilterBed subdir names (Altai, not AltaiNea)
 MASK_STEM = {"Denisova": "Denisova", "AltaiNea": "Altai",
              "Vindija33.19": "Vindija33.19", "Chagyrskaya": "Chagyrskaya"}
-_B2C = {"A": 0, "C": 1, "G": 2, "T": 3}
-MISS = -2
+MISS = int(V.MISS)
+_code = V.code_bases                                 # vectorized base -> int8 code
 
 
-def _code(series) -> np.ndarray:
-    """Map a pandas Series of base strings to int8 codes (A/C/G/T=0..3, else MISS)."""
-    return series.map(lambda b: _B2C.get(b, MISS)).astype("int64").to_numpy()
+def _num(series) -> np.ndarray:
+    return pd.to_numeric(series, errors="coerce").to_numpy(dtype=np.float32)
 
 
-def load_chromosome(chrom: str):
-    """Outer-merge archaic variant caches + modern freqs into one union table."""
-    dfs = {}
+def load_chromosome(chrom: str) -> dict:
+    """Align the four archaic caches + the 1000G frequency cache onto one position axis.
+
+    Returns a dict of parallel numpy arrays rather than a merged DataFrame. Four
+    successive pandas outer-merges on object-dtype columns were the memory and time
+    bottleneck on the larger chromosomes; a single sorted union plus searchsorted
+    scatter is O(n log n) with int64 keys and int8 payloads.
+    """
+    raw, pos_sets = {}, []
     for g in ARCHAICS:
         p = CACHE / f"{g}.chr{chrom}.variants.tsv.gz"
         if not p.exists():
             raise FileNotFoundError(f"missing cache {p} (run extract_variants.py)")
-        s = SHORT[g]
-        d = pd.read_csv(p, sep="\t", dtype=str)
-        keep = {"pos": "pos", "ref": "ref", "a1": f"{s}_a1", "a2": f"{s}_a2"}
-        if g == "Denisova":                          # keep the annotation columns once
-            keep.update({"map20": "map20", "rm": "rm", "ur": "ur",
-                         "cpg": "cpg", "bsc": "bsc", "canc": "canc"})
-        d = d[list(keep)].rename(columns=keep)
+        cols = ["pos", "ref", "a1", "a2"]
+        if g in ("Denisova", "AltaiNea"):             # only these carry EPO annotation
+            cols += ["canc", "map20", "rm", "ur", "cpg", "bsc"]
+        d = pd.read_csv(p, sep="\t", usecols=cols, dtype=str)
         d["pos"] = d["pos"].astype(np.int64)
-        dfs[g] = d
+        raw[g] = d
+        pos_sets.append(d["pos"].to_numpy())
     mod = pd.read_csv(CACHE / f"1000G.chr{chrom}.freq.tsv.gz", sep="\t", dtype=str)
     mod["pos"] = mod["pos"].astype(np.int64)
-    mod = mod.rename(columns={"ref": "mref", "alt": "malt"})
+    pos_sets.append(mod["pos"].to_numpy())
 
-    u = dfs["Denisova"]
-    for g in ARCHAICS[1:]:
-        u = u.merge(dfs[g], on="pos", how="outer", suffixes=("", "_dup"))
-        if "ref_dup" in u.columns:                   # coalesce the shared hg19 ref
-            u["ref"] = u["ref"].fillna(u["ref_dup"]); u = u.drop(columns=["ref_dup"])
-    u = u.merge(mod, on="pos", how="outer")
-    u["ref"] = u["ref"].fillna(u["mref"])
-    u = u.sort_values("pos").reset_index(drop=True)
-    return u
+    pos = np.unique(np.concatenate(pos_sets))
+    n = len(pos)
+    out = {"pos": pos, "pos0": pos - 1}
+
+    def scatter(dst, src_pos, values):
+        dst[np.searchsorted(pos, src_pos)] = values
+        return dst
+
+    refc = np.full(n, MISS, dtype=np.int8)
+    ancc = np.full(n, MISS, dtype=np.int8)
+    for g in ARCHAICS:
+        d = raw[g]
+        gp = d["pos"].to_numpy()
+        for tag, col in (("a1", "a1"), ("a2", "a2")):
+            arr = np.full(n, MISS, dtype=np.int8)
+            out[f"{SHORT[g]}_{tag}"] = scatter(arr, gp, _code(d[col].fillna(".")))
+        # hg19 REF and the chimp-human ancestral base are position-level facts: take
+        # them from whichever genome supplies them, first valid wins.
+        rc = _code(d["ref"].fillna("."))
+        need = (refc[np.searchsorted(pos, gp)] == MISS) & (rc != MISS)
+        idx = np.searchsorted(pos, gp)
+        refc[idx[need]] = rc[need]
+        if "canc" in d.columns:
+            ac = _code(d["canc"].fillna("."))
+            need = (ancc[idx] == MISS) & (ac != MISS)
+            ancc[idx[need]] = ac[need]
+        if g == "Denisova":
+            for name in ("map20", "rm", "ur", "cpg", "bsc"):
+                arr = np.full(n, np.nan, dtype=np.float32)
+                out[name] = scatter(arr, gp, _num(d[name]))
+
+    mp = mod["pos"].to_numpy()
+    midx = np.searchsorted(pos, mp)
+    mrefc = _code(mod["ref"].fillna("."))
+    need = (refc[midx] == MISS) & (mrefc != MISS)
+    refc[midx[need]] = mrefc[need]
+    aac = _code(mod["aa"].fillna(".")) if "aa" in mod.columns else np.full(len(mp), MISS, np.int8)
+    need = (ancc[midx] == MISS) & (aac != MISS)
+    ancc[midx[need]] = aac[need]
+
+    malt = np.full(n, MISS, dtype=np.int8)
+    scatter(malt, mp, _code(mod["alt"].fillna(".")))
+    in_1000g = np.zeros(n, dtype=bool)
+    in_1000g[midx] = True
+    p_afr = np.zeros(n, dtype=np.float32)
+    p_eur = np.zeros(n, dtype=np.float32)
+    scatter(p_afr, mp, np.nan_to_num(_num(mod["afr"])))
+    scatter(p_eur, mp, np.nan_to_num(_num(mod["eur"])))
+
+    out.update(refc=refc, ancc=ancc, malt=malt, p_afr=p_afr, p_eur=p_eur,
+               in_1000g=in_1000g)
+    for name in ("map20", "rm", "ur", "cpg", "bsc"):
+        out.setdefault(name, np.full(n, np.nan, dtype=np.float32))
+    return out
 
 
 def _fill_genome(u, s, mask, refc, pos0):
     """Return (a0,a1) code arrays for genome `s`: cached alleles, else hom-ref if
     callable, else MISS. Non-SNP (indel/N) alleles collapse to MISS."""
-    a1 = _code(u[f"{s}_a1"].fillna("."))
-    a2 = _code(u[f"{s}_a2"].fillna("."))
+    a1 = u[f"{s}_a1"].copy()
+    a2 = u[f"{s}_a2"].copy()
     has_call = (a1 != MISS) & (a2 != MISS)
     callable_here = V.mask_membership(mask, pos0)
     homref = callable_here & ~has_call & (refc != MISS)
@@ -120,6 +193,58 @@ def _dxy_mod(x0, x1, refc, altc, p):
     return mm
 
 
+def polarized_patterns(u, genc, in_common):
+    """Per-site polarized derived-allele patterns across the four archaics.
+
+    Returns a dict of boolean per-site arrays. A site qualifies only when it is in the
+    common callable mask, has a confident ancestral base, all four archaics are called,
+    and the African derived frequency is resolvable. `afr0` means the derived allele is
+    entirely absent from the African panel, which is what makes a pattern lineage-
+    specific rather than shared standing variation.
+    """
+    ancc, refc, malt = u["ancc"], u["refc"], u["malt"]
+    anc_ok = ancc != MISS
+
+    # African derived frequency. Sites absent from the 1000G biallelic-SNP cache are
+    # monomorphic-reference in moderns (the convention extract_modern.py documents),
+    # so their derived frequency is 0 or 1 depending on whether REF is the ancestral.
+    q = np.full(len(ancc), np.nan, dtype=np.float32)
+    mono = ~u["in_1000g"] & anc_ok & (refc != MISS)
+    q[mono] = np.where(refc[mono] == ancc[mono], 0.0, 1.0)
+    poly = u["in_1000g"] & anc_ok & (refc != MISS) & (malt != MISS)
+    alt_is_anc = poly & (malt == ancc)
+    ref_is_anc = poly & (refc == ancc)
+    q[alt_is_anc] = 1.0 - u["p_afr"][alt_is_anc]
+    q[ref_is_anc] = u["p_afr"][ref_is_anc]
+    # triallelic w.r.t. the ancestral base (neither REF nor ALT is ancestral): unusable
+    q[poly & ~alt_is_anc & ~ref_is_anc] = np.nan
+
+    der, called = {}, {}
+    for s in ("den", "alt", "vin", "chag"):
+        a1, a2 = genc[s]
+        called[s] = (a1 != MISS) & (a2 != MISS)
+        der[s] = called[s] & anc_ok & ((a1 != ancc) | (a2 != ancc))
+
+    base = in_common & anc_ok & np.isfinite(q)
+    for s in called:
+        base = base & called[s]
+    afr0 = base & (q == 0)
+
+    D, A, Vv, C = der["den"], der["alt"], der["vin"], der["chag"]
+    NEA_ALL = A & Vv & C
+    return {
+        "n_pol": base,                                   # polarizable, all-4-callable
+        "n_der_any": base & (D | A | Vv | C | (q > 0)),  # rate-proportional denominator
+        "pat_den_only": afr0 & D & ~A & ~Vv & ~C,        # Model-B signature
+        "pat_nea_all": afr0 & ~D & NEA_ALL,              # Model-A signature
+        "pat_nea_any": afr0 & ~D & (A | Vv | C),
+        "pat_all_arch": afr0 & D & NEA_ALL,              # ordinary Nea-Den shared ancestry
+        "pat_alt_only": afr0 & ~D & A & ~Vv & ~C,        # single-lineage drift/error
+        "pat_vin_only": afr0 & ~D & ~A & Vv & ~C,
+        "pat_chag_only": afr0 & ~D & ~A & ~Vv & C,
+    }
+
+
 def _win_sum(pos0, values, win, nbins):
     """Sum `values` (NaN-aware) into disjoint windows of width `win`; also count."""
     wid = (pos0 // win).astype(np.int64)
@@ -129,10 +254,16 @@ def _win_sum(pos0, values, win, nbins):
     return s[:nbins], n[:nbins]
 
 
+def _win_count(pos0, flag, win, nbins):
+    """Count True entries of a boolean per-site array into fixed-width windows."""
+    wid = (pos0[flag] // win).astype(np.int64)
+    return np.bincount(wid, minlength=nbins)[:nbins].astype(np.int64)
+
+
 def scan(chrom: str, win_sizes=(20000, 50000, 100000), min_callable_frac=0.30):
     u = load_chromosome(chrom)
-    pos0 = (u["pos"].to_numpy() - 1).astype(np.int64)
-    refc = _code(u["ref"].fillna("."))
+    pos0 = u["pos0"]
+    refc = u["refc"]
 
     masks = {g: V.read_mask(MASKS / f"{MASK_STEM[g]}.chr{chrom}.mask.bed.gz", chrom) for g in ARCHAICS}
     # COMMON mask = sites callable in ALL four archaics. Cross-genome divergences are
@@ -149,9 +280,10 @@ def scan(chrom: str, win_sizes=(20000, 50000, 100000), min_callable_frac=0.30):
         genc[s] = _fill_genome(u, s, masks[g], refc, pos0)
 
     # modern panels
-    malt = _code(u["malt"].fillna("."))
-    p_afr = pd.to_numeric(u["afr"], errors="coerce").fillna(0.0).to_numpy()
-    p_eur = pd.to_numeric(u["eur"], errors="coerce").fillna(0.0).to_numpy()
+    malt, p_afr, p_eur = u["malt"], u["p_afr"], u["p_eur"]
+
+    # polarized derived-allele patterns (Model-A battery; see the module docstring)
+    patterns = polarized_patterns(u, genc, in_common)
 
     # per-site divergences
     site = {}
@@ -167,10 +299,7 @@ def scan(chrom: str, win_sizes=(20000, 50000, 100000), min_callable_frac=0.30):
         site[k] = np.where(in_common, site[k], np.nan)
 
     # annotation (from Denisovan-carried columns; representative within-window)
-    map20 = pd.to_numeric(u["map20"], errors="coerce").to_numpy()
-    rm = pd.to_numeric(u["rm"], errors="coerce").to_numpy()
-    ur = pd.to_numeric(u["ur"], errors="coerce").to_numpy()
-    bsc = pd.to_numeric(u["bsc"], errors="coerce").to_numpy()
+    map20, rm, ur, bsc = u["map20"], u["rm"], u["ur"], u["bsc"]
 
     TABLES.mkdir(parents=True, exist_ok=True)
     CDDRDIR.mkdir(parents=True, exist_ok=True)
@@ -186,16 +315,15 @@ def scan(chrom: str, win_sizes=(20000, 50000, 100000), min_callable_frac=0.30):
             s, n = _win_sum(pos0, vals, win, nbins)
             rows[f"_num_{key}"] = s
             rows[f"_n_{key}"] = n
+        # polarized site-pattern counts per window
+        for key, flag in patterns.items():
+            rows[key] = _win_count(pos0, flag, win, nbins)
         # single common-mask denominator for every divergence (comparable across genomes)
-        common_bp = np.array(
-            [V.callable_bp_in_window(common, i * win, i * win + win) for i in range(nbins)],
-            dtype=np.int64)
+        common_bp = V.callable_bp_windows(common, win, nbins)
         rows["callable_common"] = common_bp
         # per-genome callable bp kept for reporting / missingness diagnostics
         for g in ARCHAICS:
-            rows[f"callable_{SHORT[g]}"] = np.array(
-                [V.callable_bp_in_window(masks[g], i * win, i * win + win) for i in range(nbins)],
-                dtype=np.int64)
+            rows[f"callable_{SHORT[g]}"] = V.callable_bp_windows(masks[g], win, nbins)
 
         df = pd.DataFrame(rows)
         denom = np.where(common_bp > 0, common_bp, np.nan)
@@ -213,6 +341,31 @@ def scan(chrom: str, win_sizes=(20000, 50000, 100000), min_callable_frac=0.30):
         df["callable_frac_den"] = df["callable_common"] / win  # back-compat alias
 
         df = df[[c for c in df.columns if not c.startswith("_")]]
+
+        # ---- external mutation-rate denominator (src/ratemap.py), if built ---------
+        # div_x_afr / sub_rate removes local mutation-rate variation WITHOUT
+        # contrasting the archaics against each other, so unlike den_excess it leaves
+        # Model A's shared Neanderthal+Denisovan signal intact. Absent a rate map the
+        # columns are NaN and downstream falls back to the contrast statistics.
+        rp = RATEDIR / f"rate.chr{chrom}.win{win}.tsv"
+        if rp.exists():
+            rate = pd.read_csv(rp, sep="\t", usecols=["start", "sub_rate", "repeat_frac",
+                                                      "anc_valid_bp", "hum_sub"])
+            df = df.merge(rate, on="start", how="left")
+        else:
+            for c in ("sub_rate", "repeat_frac", "anc_valid_bp", "hum_sub"):
+                df[c] = np.nan
+        sr = df["sub_rate"].to_numpy(dtype=float)
+        sr = np.where(np.isfinite(sr) & (sr > 0), sr, np.nan)
+        for s in ("den", "alt", "vin", "chag"):
+            df[f"R_{s}_afr"] = df[f"div_{s}_afr"] / sr      # rate-normalized depth
+        df["R_nea_afr"] = df[["R_alt_afr", "R_vin_afr", "R_chag_afr"]].mean(axis=1)
+        # rate-free polarized compositions (local mutation rate cancels in the ratio)
+        nder = df["n_der_any"].replace(0, np.nan)
+        for k in ("pat_nea_all", "pat_den_only", "pat_all_arch",
+                  "pat_alt_only", "pat_vin_only", "pat_chag_only"):
+            df[f"f_{k[4:]}"] = df[k] / nder
+
         # CDDR flagging on Denisovan-vs-African divergence
         usable = (df["callable_frac_den"] >= min_callable_frac) & np.isfinite(df["div_den_afr"])
         df["z_den_afr"] = np.nan
@@ -246,14 +399,34 @@ def _g(short):
     raise KeyError(short)
 
 
+def _scan_one(job):
+    """Worker entry point: chromosomes are fully independent, so they parallelize."""
+    chrom, wins, mcf = job
+    try:
+        scan(chrom, win_sizes=wins, min_callable_frac=mcf)
+        return (chrom, None)
+    except Exception as e:
+        return (chrom, f"{type(e).__name__}: {e}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--chroms", nargs="+", default=["21", "22"])
     ap.add_argument("--wins", nargs="+", type=int, default=[20000, 50000, 100000])
     ap.add_argument("--min-callable-frac", type=float, default=0.30)
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="parallel chromosomes; each worker peaks near 2-3 GB, so on a "
+                         "16 GB laptop 4 is a sensible ceiling")
     args = ap.parse_args()
-    for c in args.chroms:
-        scan(c, win_sizes=tuple(args.wins), min_callable_frac=args.min_callable_frac)
+    jobs = [(c, tuple(args.wins), args.min_callable_frac) for c in args.chroms]
+    if args.jobs <= 1 or len(jobs) == 1:
+        for j in jobs:
+            _scan_one(j)
+        return
+    with ProcessPoolExecutor(max_workers=args.jobs) as ex:
+        for chrom, err in ex.map(_scan_one, jobs):
+            if err:
+                print(f"chr{chrom}: FAILED — {err}", file=sys.stderr)
 
 
 if __name__ == "__main__":

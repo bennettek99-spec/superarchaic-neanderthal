@@ -1,0 +1,207 @@
+
+==========================================================================
+M0_none: 4,000 usable windows, 40 jackknife blocks (5 Mb), rate denominator = sub_rate
+==========================================================================
+
+-- T1  clade clustering (Model A vs null) --------------------------------
+   pattern         total  per-win   alpha (rel.disp)     latent_ac(lag1)   phi
+   pat_nea_all     33805     8.45    0.259 +/- 0.012   +0.204 +/- 0.028    3.17
+   pat_den_only    61517    15.38    0.096 +/- 0.007   +0.292 +/- 0.028    2.46
+   pat_all_arch    41146    10.29    0.393 +/- 0.015   +0.180 +/- 0.022    4.97
+   pat_alt_only    18191     4.55    0.275 +/- 0.016   +0.368 +/- 0.034    2.23
+   pat_vin_only    15127     3.78    0.259 +/- 0.025   +0.380 +/- 0.036    1.94
+   pat_chag_only   13076     3.27    0.316 +/- 0.023   +0.436 +/- 0.036    2.01
+
+   CONTRASTS on alpha (jackknifed as a single statistic):
+     alpha(pat_nea_all) - alpha(pat_alt_only ) = -0.017 +/- 0.021   z = -0.78
+     alpha(pat_nea_all) - alpha(pat_all_arch ) = -0.134 +/- 0.017   z = -7.74
+     alpha(pat_nea_all) - alpha(pat_den_only ) = +0.162 +/- 0.013   z = +12.26
+   vs pat_alt_only : drift/error control -> Model A predicts > 0
+   vs pat_all_arch : same depth/genome count on the SHARED archaic branch;
+                     note Model A also feeds this pattern, so it is a
+                     conservative (signal-contaminated) control
+   vs pat_den_only : Model B's own signature -> Model A predicts ~0,
+                     Model B predicts < 0
+
+-- T2  tail symmetry at the pooled q=0.99 threshold ----------------------
+   R_den   tail mass 0.0107 +/- 0.0018
+   R_alt   tail mass 0.0085 +/- 0.0014
+   R_vin   tail mass 0.0105 +/- 0.0016
+   R_chag  tail mass 0.0103 +/- 0.0017
+   Denisovan - Neanderthal-mean = +0.0010 +/- 0.0016  (z = +0.63)
+   z >> 0 favours Model B; z ~ 0 is equally consistent with Model A and the null.
+
+-- T3  cross-lineage covariance ------------------------------------------
+   corr(R_den, R_nea) = +0.8303 +/- 0.0090
+   Compare against the simulated M0/M1/M2/M3 values (sims/superarchaic_sim.py).
+
+-- legacy co-location test (for comparison only) -------------------------
+   48 CDDRs on R_den; 81% show Neanderthal co-elevation (simulation puts this test's power under a true Model A near 6%)
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\modelA/*.M0_none.win50000.tsv
+
+==========================================================================
+M1_neandersovan: 4,000 usable windows, 40 jackknife blocks (5 Mb), rate denominator = sub_rate
+==========================================================================
+
+-- T1  clade clustering (Model A vs null) --------------------------------
+   pattern         total  per-win   alpha (rel.disp)     latent_ac(lag1)   phi
+   pat_nea_all     38719     9.68    0.450 +/- 0.034   +0.254 +/- 0.021    5.19
+   pat_den_only    68679    17.17    0.199 +/- 0.014   +0.316 +/- 0.025    4.21
+   pat_all_arch    42014    10.50    0.530 +/- 0.033   +0.271 +/- 0.029    6.35
+   pat_alt_only    18637     4.66    0.338 +/- 0.023   +0.352 +/- 0.039    2.59
+   pat_vin_only    15082     3.77    0.240 +/- 0.018   +0.398 +/- 0.032    1.88
+   pat_chag_only   13114     3.28    0.323 +/- 0.025   +0.431 +/- 0.034    2.05
+
+   CONTRASTS on alpha (jackknifed as a single statistic):
+     alpha(pat_nea_all) - alpha(pat_alt_only ) = +0.112 +/- 0.039   z = +2.85
+     alpha(pat_nea_all) - alpha(pat_all_arch ) = -0.080 +/- 0.042   z = -1.88
+     alpha(pat_nea_all) - alpha(pat_den_only ) = +0.252 +/- 0.031   z = +8.05
+   vs pat_alt_only : drift/error control -> Model A predicts > 0
+   vs pat_all_arch : same depth/genome count on the SHARED archaic branch;
+                     note Model A also feeds this pattern, so it is a
+                     conservative (signal-contaminated) control
+   vs pat_den_only : Model B's own signature -> Model A predicts ~0,
+                     Model B predicts < 0
+
+-- T2  tail symmetry at the pooled q=0.99 threshold ----------------------
+   R_den   tail mass 0.0107 +/- 0.0025
+   R_alt   tail mass 0.0085 +/- 0.0017
+   R_vin   tail mass 0.0107 +/- 0.0021
+   R_chag  tail mass 0.0100 +/- 0.0021
+   Denisovan - Neanderthal-mean = +0.0010 +/- 0.0020  (z = +0.51)
+   z >> 0 favours Model B; z ~ 0 is equally consistent with Model A and the null.
+
+-- T3  cross-lineage covariance ------------------------------------------
+   corr(R_den, R_nea) = +0.7218 +/- 0.0174
+   Compare against the simulated M0/M1/M2/M3 values (sims/superarchaic_sim.py).
+
+-- legacy co-location test (for comparison only) -------------------------
+   123 CDDRs on R_den; 54% show Neanderthal co-elevation (simulation puts this test's power under a true Model A near 6%)
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\modelA/*.M1_neandersovan.win50000.tsv
+
+==========================================================================
+M2_denisovan_only: 4,000 usable windows, 40 jackknife blocks (5 Mb), rate denominator = sub_rate
+==========================================================================
+
+-- T1  clade clustering (Model A vs null) --------------------------------
+   pattern         total  per-win   alpha (rel.disp)     latent_ac(lag1)   phi
+   pat_nea_all     35405     8.85    0.274 +/- 0.012   +0.225 +/- 0.022    3.42
+   pat_den_only    72298    18.07    0.296 +/- 0.022   +0.533 +/- 0.023    6.15
+   pat_all_arch    38635     9.66    0.425 +/- 0.015   +0.226 +/- 0.024    5.10
+   pat_alt_only    18508     4.63    0.277 +/- 0.018   +0.408 +/- 0.030    2.28
+   pat_vin_only    15038     3.76    0.229 +/- 0.023   +0.411 +/- 0.042    1.84
+   pat_chag_only   13049     3.26    0.318 +/- 0.025   +0.444 +/- 0.034    2.04
+
+   CONTRASTS on alpha (jackknifed as a single statistic):
+     alpha(pat_nea_all) - alpha(pat_alt_only ) = -0.003 +/- 0.022   z = -0.13
+     alpha(pat_nea_all) - alpha(pat_all_arch ) = -0.151 +/- 0.018   z = -8.57
+     alpha(pat_nea_all) - alpha(pat_den_only ) = -0.021 +/- 0.022   z = -0.97
+   vs pat_alt_only : drift/error control -> Model A predicts > 0
+   vs pat_all_arch : same depth/genome count on the SHARED archaic branch;
+                     note Model A also feeds this pattern, so it is a
+                     conservative (signal-contaminated) control
+   vs pat_den_only : Model B's own signature -> Model A predicts ~0,
+                     Model B predicts < 0
+
+-- T2  tail symmetry at the pooled q=0.99 threshold ----------------------
+   R_den   tail mass 0.0245 +/- 0.0036
+   R_alt   tail mass 0.0047 +/- 0.0012
+   R_vin   tail mass 0.0055 +/- 0.0013
+   R_chag  tail mass 0.0053 +/- 0.0013
+   Denisovan - Neanderthal-mean = +0.0193 +/- 0.0023  (z = +8.41)
+   z >> 0 favours Model B; z ~ 0 is equally consistent with Model A and the null.
+
+-- T3  cross-lineage covariance ------------------------------------------
+   corr(R_den, R_nea) = +0.6821 +/- 0.0171
+   Compare against the simulated M0/M1/M2/M3 values (sims/superarchaic_sim.py).
+
+-- legacy co-location test (for comparison only) -------------------------
+   98 CDDRs on R_den; 30% show Neanderthal co-elevation (simulation puts this test's power under a true Model A near 6%)
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\modelA/*.M2_denisovan_only.win50000.tsv
+
+==========================================================================
+M3_separate: 4,000 usable windows, 40 jackknife blocks (5 Mb), rate denominator = sub_rate
+==========================================================================
+
+-- T1  clade clustering (Model A vs null) --------------------------------
+   pattern         total  per-win   alpha (rel.disp)     latent_ac(lag1)   phi
+   pat_nea_all     38529     9.63    0.535 +/- 0.040   +0.383 +/- 0.044    5.97
+   pat_den_only    72434    18.11    0.276 +/- 0.025   +0.514 +/- 0.042    5.78
+   pat_all_arch    35990     9.00    0.471 +/- 0.017   +0.205 +/- 0.023    5.27
+   pat_alt_only    23052     5.76    1.089 +/- 0.114   +0.366 +/- 0.044    6.90
+   pat_vin_only    16335     4.08    0.648 +/- 0.111   +0.273 +/- 0.033    3.39
+   pat_chag_only   14717     3.68    0.917 +/- 0.109   +0.292 +/- 0.033    4.29
+
+   CONTRASTS on alpha (jackknifed as a single statistic):
+     alpha(pat_nea_all) - alpha(pat_alt_only ) = -0.554 +/- 0.113   z = -4.89
+     alpha(pat_nea_all) - alpha(pat_all_arch ) = +0.064 +/- 0.040   z = +1.59
+     alpha(pat_nea_all) - alpha(pat_den_only ) = +0.259 +/- 0.052   z = +5.00
+   vs pat_alt_only : drift/error control -> Model A predicts > 0
+   vs pat_all_arch : same depth/genome count on the SHARED archaic branch;
+                     note Model A also feeds this pattern, so it is a
+                     conservative (signal-contaminated) control
+   vs pat_den_only : Model B's own signature -> Model A predicts ~0,
+                     Model B predicts < 0
+
+-- T2  tail symmetry at the pooled q=0.99 threshold ----------------------
+   R_den   tail mass 0.0123 +/- 0.0019
+   R_alt   tail mass 0.0097 +/- 0.0019
+   R_vin   tail mass 0.0092 +/- 0.0020
+   R_chag  tail mass 0.0088 +/- 0.0017
+   Denisovan - Neanderthal-mean = +0.0030 +/- 0.0036  (z = +0.84)
+   z >> 0 favours Model B; z ~ 0 is equally consistent with Model A and the null.
+
+-- T3  cross-lineage covariance ------------------------------------------
+   corr(R_den, R_nea) = +0.5817 +/- 0.0310
+   Compare against the simulated M0/M1/M2/M3 values (sims/superarchaic_sim.py).
+
+-- legacy co-location test (for comparison only) -------------------------
+   113 CDDRs on R_den; 25% show Neanderthal co-elevation (simulation puts this test's power under a true Model A near 6%)
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\modelA/*.M3_separate.win50000.tsv
+
+==========================================================================
+M4_ancient_structure: 4,000 usable windows, 40 jackknife blocks (5 Mb), rate denominator = sub_rate
+==========================================================================
+
+-- T1  clade clustering (Model A vs null) --------------------------------
+   pattern         total  per-win   alpha (rel.disp)     latent_ac(lag1)   phi
+   pat_nea_all     47432    11.86    0.593 +/- 0.024   +0.311 +/- 0.023    7.71
+   pat_den_only    77489    19.37    0.242 +/- 0.011   +0.349 +/- 0.026    5.61
+   pat_all_arch    45972    11.49    0.638 +/- 0.028   +0.310 +/- 0.034    8.13
+   pat_alt_only    19189     4.80    0.441 +/- 0.058   +0.323 +/- 0.030    3.02
+   pat_vin_only    15334     3.83    0.330 +/- 0.044   +0.362 +/- 0.036    2.21
+   pat_chag_only   13418     3.35    0.406 +/- 0.029   +0.342 +/- 0.037    2.35
+
+   CONTRASTS on alpha (jackknifed as a single statistic):
+     alpha(pat_nea_all) - alpha(pat_alt_only ) = +0.152 +/- 0.065   z = +2.33
+     alpha(pat_nea_all) - alpha(pat_all_arch ) = -0.045 +/- 0.038   z = -1.16
+     alpha(pat_nea_all) - alpha(pat_den_only ) = +0.351 +/- 0.028   z = +12.37
+   vs pat_alt_only : drift/error control -> Model A predicts > 0
+   vs pat_all_arch : same depth/genome count on the SHARED archaic branch;
+                     note Model A also feeds this pattern, so it is a
+                     conservative (signal-contaminated) control
+   vs pat_den_only : Model B's own signature -> Model A predicts ~0,
+                     Model B predicts < 0
+
+-- T2  tail symmetry at the pooled q=0.99 threshold ----------------------
+   R_den   tail mass 0.0085 +/- 0.0019
+   R_alt   tail mass 0.0100 +/- 0.0020
+   R_vin   tail mass 0.0103 +/- 0.0019
+   R_chag  tail mass 0.0112 +/- 0.0021
+   Denisovan - Neanderthal-mean = -0.0020 +/- 0.0016  (z = -1.27)
+   z >> 0 favours Model B; z ~ 0 is equally consistent with Model A and the null.
+
+-- T3  cross-lineage covariance ------------------------------------------
+   corr(R_den, R_nea) = +0.6644 +/- 0.0186
+   Compare against the simulated M0/M1/M2/M3 values (sims/superarchaic_sim.py).
+
+-- legacy co-location test (for comparison only) -------------------------
+   106 CDDRs on R_den; 60% show Neanderthal co-elevation (simulation puts this test's power under a true Model A near 6%)
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\modelA/*.M4_ancient_structure.win50000.tsv
+
+wrote C:\Users\benne\Desktop\superarchaic-neanderthal\results\sims\battery_summary.tsv

@@ -29,6 +29,38 @@ from typing import Iterator
 
 import numpy as np
 
+# --------------------------------------------------------------- base <-> code
+# Bases are carried through the numeric pipeline as int8 codes A/C/G/T = 0..3 and
+# MISS = -2 for everything else (indels, N, '.', multi-character alleles).
+MISS = np.int8(-2)
+_BASE_LUT = np.full(256, MISS, dtype=np.int8)
+for _b, _c in zip(b"ACGT", range(4)):
+    _BASE_LUT[_b] = _c
+    _BASE_LUT[_b + 32] = _c          # accept lowercase (FASTA soft-masking)
+
+
+def code_bases(values) -> np.ndarray:
+    """Vectorized base->code for a pandas Series / array of allele strings.
+
+    Only single-character A/C/G/T map to 0..3; anything longer (an indel allele such
+    as 'AT') or unrecognised maps to MISS. Done by viewing a fixed-width 'U2' array as
+    code points: element [.,0] is the first character, [.,1] is nonzero exactly when
+    the string had two or more characters. Replaces a per-element Python .map(), which
+    cost minutes per chromosome on the multi-million-row caches.
+    """
+    arr = np.asarray(values, dtype="U2")
+    cp = arr.reshape(-1).view(np.uint32).reshape(-1, 2)
+    first = np.where(cp[:, 0] < 256, cp[:, 0], 0).astype(np.uint8)
+    out = _BASE_LUT[first]
+    out[cp[:, 1] != 0] = MISS        # 2+ characters -> not a SNP allele
+    return out
+
+
+def code_seq(seq: str) -> np.ndarray:
+    """Vectorized base->code for one long sequence string (e.g. a FASTA chromosome)."""
+    return _BASE_LUT[np.frombuffer(seq.encode("ascii", "replace"), dtype=np.uint8)]
+
+
 # ----------------------------------------------------------------------------- IO
 
 
@@ -230,6 +262,8 @@ def read_mask(path, chrom: str = None) -> np.ndarray:
 
     BED is 0-based half-open. If `chrom` is given, keep only that chromosome
     (accepts '21' or 'chr21'). Files are typically single-chromosome already.
+    The result is sorted AND merged, so downstream interval arithmetic may assume
+    disjoint, ascending intervals (callable_bp_windows depends on this).
     """
     rows = []
     want = None
@@ -247,8 +281,26 @@ def read_mask(path, chrom: str = None) -> np.ndarray:
             rows.append((int(f[1]), int(f[2])))
     if not rows:
         return np.zeros((0, 2), dtype=np.int64)
-    a = np.array(rows, dtype=np.int64)
-    return a[np.argsort(a[:, 0])]
+    return merge_intervals(np.array(rows, dtype=np.int64))
+
+
+def merge_intervals(a: np.ndarray) -> np.ndarray:
+    """Sort and merge overlapping/abutting half-open intervals -> disjoint (N,2)."""
+    if len(a) == 0:
+        return np.zeros((0, 2), dtype=np.int64)
+    a = np.asarray(a, dtype=np.int64)
+    a = a[np.argsort(a[:, 0], kind="stable")]
+    starts, ends = a[:, 0], a[:, 1]
+    # a new run begins wherever this start is beyond the running max end so far
+    run_max = np.maximum.accumulate(ends)
+    new_run = np.empty(len(a), dtype=bool)
+    new_run[0] = True
+    new_run[1:] = starts[1:] > run_max[:-1]
+    # each run's end is run_max at the run's LAST index (ends >= starts, so a later
+    # run's own elements always dominate every earlier run's end)
+    begins = np.where(new_run)[0]
+    lasts = np.r_[begins[1:] - 1, len(a) - 1]
+    return np.column_stack([starts[begins], run_max[lasts]]).astype(np.int64)
 
 
 def intervals_intersect(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -288,18 +340,44 @@ def mask_membership(mask: np.ndarray, pos0) -> np.ndarray:
     return out
 
 
+def callable_bp_upto(mask: np.ndarray, x) -> np.ndarray:
+    """F(x) = callable bp of `mask` in [0, x), vectorized over an array of x.
+
+    Requires `mask` disjoint and ascending (read_mask / merge_intervals guarantee it).
+    Because the intervals are disjoint and sorted, both starts and ends ascend, so at
+    most ONE interval straddles x -- the last one starting before x. Hence
+        F(x) = (total length of intervals starting before x) - overhang of that one.
+    O(len(x) log n) with no Python loop.
+    """
+    x = np.asarray(x, dtype=np.int64)
+    if len(mask) == 0:
+        return np.zeros(x.shape, dtype=np.int64)
+    lengths = mask[:, 1] - mask[:, 0]
+    cum = np.concatenate([[0], np.cumsum(lengths)])         # cum[k] = sum of first k
+    k = np.searchsorted(mask[:, 0], x, side="right")        # intervals 0..k-1 start < x
+    tot = cum[k]
+    prev = np.maximum(k - 1, 0)
+    overhang = np.where(k > 0, np.maximum(mask[prev, 1] - x, 0), 0)
+    return (tot - overhang).astype(np.int64)
+
+
+def callable_bp_windows(mask: np.ndarray, win: int, nbins: int) -> np.ndarray:
+    """Callable bp of `mask` in each of `nbins` consecutive windows of width `win`.
+
+    Vectorized replacement for calling callable_bp_in_window() once per window; the
+    scan does this for the common mask plus four per-genome masks at three window
+    sizes, which dominated runtime on the larger chromosomes.
+    """
+    edges = np.arange(nbins + 1, dtype=np.int64) * win
+    return np.diff(callable_bp_upto(mask, edges))
+
+
 def callable_bp_in_window(mask: np.ndarray, wstart: int, wend: int) -> int:
     """Total callable base pairs of `mask` (sorted intervals) within [wstart,wend)."""
     if len(mask) == 0:
         return 0
-    lo = np.searchsorted(mask[:, 1], wstart, side="right")
-    tot = 0
-    for k in range(lo, len(mask)):
-        s, e = int(mask[k, 0]), int(mask[k, 1])
-        if s >= wend:
-            break
-        tot += min(e, wend) - max(s, wstart)
-    return int(tot)
+    f = callable_bp_upto(mask, np.array([wstart, wend], dtype=np.int64))
+    return int(f[1] - f[0])
 
 
 # --------------------------------------------------------------- ancestral FASTA

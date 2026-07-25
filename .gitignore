@@ -7,6 +7,10 @@ data/cache/
 
 # Large regenerable per-window tables (keep the small CDDR catalogs + summaries)
 results/tables/windows.*.tsv
+# Simulated window tables: ~1 MB each and reproducible in ~2 min from a seed, so only
+# the battery/power summaries are tracked. results/ratemap/ IS tracked -- it is small
+# and rebuilding it means re-downloading the hg19 FASTAs.
+results/sims/windows_*.tsv
 *.vcf
 *.vcf.gz
 *.vcf.gz.tbi

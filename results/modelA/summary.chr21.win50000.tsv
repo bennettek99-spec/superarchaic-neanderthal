@@ -1,0 +1,2 @@
+label	n_windows	n_blocks	rate_denominator	phi_pat_nea_all	phi_pat_den_only	phi_pat_all_arch	phi_pat_alt_only	phi_pat_vin_only	phi_pat_chag_only	ac_pat_nea_all	ac_pat_den_only	ac_pat_all_arch	ac_pat_alt_only	ac_pat_vin_only	ac_pat_chag_only	tail_contrast	tail_contrast_se	tail_contrast_z	corr_den_nea	corr_den_nea_se	legacy_n_cddr	legacy_frac_shared
+chr21	638	7	sub_rate	3.55435	2.70677	4.98046	2.0253	1.53398	1.23006	0.328227	0.290558	0.324883	0.275247	0.134719	0.161803	0.00522466	0.0048352	1.08055	0.711232	0.0204527	15	0.733333

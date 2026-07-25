@@ -1,0 +1,66 @@
+chr13: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr13.fa.gz
+  win20000: 4703 windows with ancestral coverage, median sub_rate=0.00621, median anc_cov=0.99 -> rate.chr13.win20000.tsv
+  win50000: 1898 windows with ancestral coverage, median sub_rate=0.00627, median anc_cov=0.99 -> rate.chr13.win50000.tsv
+  win100000: 955 windows with ancestral coverage, median sub_rate=0.00627, median anc_cov=0.98 -> rate.chr13.win100000.tsv
+  deleted chr13.fa.gz (rate map retained)
+  chr13 done in 25s
+chr14: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr14.fa.gz
+  win20000: 4287 windows with ancestral coverage, median sub_rate=0.00585, median anc_cov=0.99 -> rate.chr14.win20000.tsv
+  win50000: 1727 windows with ancestral coverage, median sub_rate=0.00589, median anc_cov=0.99 -> rate.chr14.win50000.tsv
+  win100000: 867 windows with ancestral coverage, median sub_rate=0.00589, median anc_cov=0.98 -> rate.chr14.win100000.tsv
+  deleted chr14.fa.gz (rate map retained)
+  chr14 done in 19s
+chr15: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr15.fa.gz
+  win20000: 3782 windows with ancestral coverage, median sub_rate=0.00607, median anc_cov=0.99 -> rate.chr15.win20000.tsv
+  win50000: 1531 windows with ancestral coverage, median sub_rate=0.00616, median anc_cov=0.98 -> rate.chr15.win50000.tsv
+  win100000: 777 windows with ancestral coverage, median sub_rate=0.00621, median anc_cov=0.98 -> rate.chr15.win100000.tsv
+  deleted chr15.fa.gz (rate map retained)
+  chr15 done in 17s
+chr16: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr16.fa.gz
+  win20000: 3595 windows with ancestral coverage, median sub_rate=0.00678, median anc_cov=0.99 -> rate.chr16.win20000.tsv
+  win50000: 1469 windows with ancestral coverage, median sub_rate=0.00683, median anc_cov=0.98 -> rate.chr16.win50000.tsv
+  win100000: 750 windows with ancestral coverage, median sub_rate=0.00683, median anc_cov=0.97 -> rate.chr16.win100000.tsv
+  deleted chr16.fa.gz (rate map retained)
+  chr16 done in 15s
+chr17: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr17.fa.gz
+  win20000: 3676 windows with ancestral coverage, median sub_rate=0.00576, median anc_cov=0.99 -> rate.chr17.win20000.tsv
+  win50000: 1501 windows with ancestral coverage, median sub_rate=0.00582, median anc_cov=0.98 -> rate.chr17.win50000.tsv
+  win100000: 765 windows with ancestral coverage, median sub_rate=0.00581, median anc_cov=0.97 -> rate.chr17.win100000.tsv
+  deleted chr17.fa.gz (rate map retained)
+  chr17 done in 13s
+chr18: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr18.fa.gz
+  win20000: 3687 windows with ancestral coverage, median sub_rate=0.00628, median anc_cov=0.99 -> rate.chr18.win20000.tsv
+  win50000: 1483 windows with ancestral coverage, median sub_rate=0.00633, median anc_cov=0.99 -> rate.chr18.win50000.tsv
+  win100000: 744 windows with ancestral coverage, median sub_rate=0.00633, median anc_cov=0.98 -> rate.chr18.win100000.tsv
+  deleted chr18.fa.gz (rate map retained)
+  chr18 done in 15s
+chr19: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr19.fa.gz
+  win20000: 2415 windows with ancestral coverage, median sub_rate=0.00659, median anc_cov=0.96 -> rate.chr19.win20000.tsv
+  win50000: 1009 windows with ancestral coverage, median sub_rate=0.00675, median anc_cov=0.94 -> rate.chr19.win50000.tsv
+  win100000: 522 windows with ancestral coverage, median sub_rate=0.00677, median anc_cov=0.92 -> rate.chr19.win100000.tsv
+  deleted chr19.fa.gz (rate map retained)
+  chr19 done in 9s
+chr20: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr20.fa.gz
+  win20000: 2917 windows with ancestral coverage, median sub_rate=0.00623, median anc_cov=0.99 -> rate.chr20.win20000.tsv
+  win50000: 1173 windows with ancestral coverage, median sub_rate=0.00632, median anc_cov=0.98 -> rate.chr20.win50000.tsv
+  win100000: 591 windows with ancestral coverage, median sub_rate=0.00632, median anc_cov=0.97 -> rate.chr20.win100000.tsv
+  deleted chr20.fa.gz (rate map retained)
+  chr20 done in 10s
+chr22: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr22.fa.gz
+  win20000: 1565 windows with ancestral coverage, median sub_rate=0.00638, median anc_cov=0.98 -> rate.chr22.win20000.tsv
+  win50000: 646 windows with ancestral coverage, median sub_rate=0.00641, median anc_cov=0.97 -> rate.chr22.win50000.tsv
+  win100000: 331 windows with ancestral coverage, median sub_rate=0.00637, median anc_cov=0.96 -> rate.chr22.win100000.tsv
+  deleted chr22.fa.gz (rate map retained)
+  chr22 done in 7s
+chr6: building rate map
+  downloading https://hgdownload.soe.ucsc.edu/goldenPath/hg19/chromosomes/chr6.fa.gz
+chr6: FAILED — FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\benne\\Desktop\\superarchaic-neanderthal\\data\\masks\\Denisova.chr6.mask.bed.gz'
