@@ -326,3 +326,10 @@ chr6:
 [17:59:30]   chr6 mask Chagyrskaya ok
 [18:09:38]   chr6 1000G: extracting cache
     chr6: 1,000,000 lines (18s)
+    chr6: 2,000,000 lines (35s)
+    chr6: 3,000,000 lines (53s)
+    chr6: 4,000,000 lines (71s)
+    chr6: 5,000,000 lines (88s)
+  chr6: 4,800,101 biallelic SNPs of 5,024,119 lines in 88s -> 1000G.chr6.freq.tsv.gz
+[18:11:07]   chr6 1000G: cached OK, deleted VCF
+[18:11:09] ===== chr6 DONE in 51m47s | data/ now 4.1G =====

@@ -74,7 +74,7 @@ bcftools/cyvcf2/pysam/scikit-allel** → a pure-Python streaming VCF reader is u
 validated statistics package from the main pipeline (`../archaic-introgression/archaic`,
 f4/D/f4-ratio + block jackknife). Honest-framing ethos and conventions follow that pipeline.
 
-## Status — chr13–22 (~33% of the genome, 12,470 usable 50-kb windows)
+## Status — chr6 + chr13–22 (964 Mb, 33% of the autosomes, 15,616 usable 50-kb windows)
 - [x] **1. Literature review + comparison table** — `docs/LITERATURE_REVIEW.md`
 - [x] **2. Dataset inventory** — `docs/DATA.md`; chr13–22 cached, chr6 in acquisition
 - [x] **3. External mutation-rate map** — `results/ratemap/`, median 0.0058–0.0068/bp
@@ -92,6 +92,22 @@ puts at ≈0 under the null and under Model B and at +0.112 under Model A. It is
 data-quality filters — but **ancient structure (M4) reproduces it** (+0.152), it depends on which
 drift control is used, and the demography is unfitted. **A candidate signal, not a finding**, and
 explicitly not a claim about superarchaic ancestry. See [`docs/FINDINGS.md`](docs/FINDINGS.md).
+
+**Updated with chr6: the signal does not hold.** The contrast falls to **+0.067 ± 0.061
+(z = 1.09)** — adding 26% more data halved it, and leave-one-chromosome-out shows chr13–22 was
+the outlier (dropping any other chromosome gives +0.03…+0.09). The value is consistent with the
+null *and* with Model A, which are only 0.129 apart. **No significant signal, no claim in either
+direction.**
+
+**What changed is the power, and that is the point.** The old co-location test had ~6% power
+under a true Model A *at any genome coverage* — more sequence could never have fixed it. The
+replacement has **68% power now and 98% with all autosomes**, so finishing the genome is now the
+highest-value next step, inverting the pilot's advice.
+
+| coverage | windows | SE | z under Model A | power |
+|---|---|---|---|---|
+| now (chr6 + chr13–22, 33%) | 15,616 | 0.061 | 2.11 | 68% |
+| all autosomes | 46,669 | 0.035 | 3.66 | 98% |
 
 ## Pipeline order
 `src/stagger.sh <chroms>` (download → extract → verify → delete, now including the rate map) →

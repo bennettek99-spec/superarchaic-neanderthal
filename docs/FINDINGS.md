@@ -1,8 +1,15 @@
 # Findings — Superarchaic Introgression in Neanderthals
 
-**Scope: chromosomes 13–22 (~33% of the genome, 12,470 usable 50-kb windows), plus chr6
-in acquisition.** Language follows the project's interpretation rules; nothing is called
-"superarchaic".
+**Scope: chr6 + chr13–22 — 964 Mb, 33% of the autosomes, 15,616 usable 50-kb windows.**
+Language follows the project's interpretation rules; nothing is called "superarchaic".
+
+**Headline.** The pilot's reported Model-A null was a selection artefact and is
+withdrawn (§0). Its replacement — a locus-free test that actually has power against
+Model A — gives **+0.067 ± 0.061 (z = 1.09): no significant signal**, a value consistent
+with the null *and* with Model A, because at 33% of the autosomes the two are only ~2.1
+standard errors apart. The project's real output this round is therefore a **method with
+quantified power (68% now, 98% at whole-genome) where the previous one had ~6% at any
+coverage** — an unanswerable question turned into a sample-size one (§5).
 
 ---
 
@@ -130,7 +137,43 @@ rare a pattern is.
 
 ---
 
-## 2. Observed results (chr13–22, 50 kb, MHC excluded)
+## 2. Observed results (chr6 + chr13–22, 50 kb, MHC excluded)
+
+**T1 contrast: α(`pat_nea_all`) − α(`pat_alt_only`) = +0.067 ± 0.061 (z = +1.09).**
+
+**T2:** Denisovan minus Neanderthal-mean tail mass = +0.0022 ± 0.0010 (z = +2.24) —
+a weak Model-B-direction excess.
+
+**T3:** corr(R_den, R_nea) = +0.725 ± 0.012.
+
+### chr6 halved the T1 signal, and that matters more than the point estimate
+
+On chr13–22 alone the contrast was +0.114 ± 0.046 (z = 2.49). Adding chr6 — **26% more
+data** — dropped it to +0.067 ± 0.061 (z = 1.09). An effect that shrinks when data is
+added is behaving like noise, and the leave-one-chromosome-out table makes the reason
+plain: **every** chromosome dropped gives +0.03…+0.09, *except* dropping chr6, which
+gives +0.114. The chr13–22 figure was the outlier, not the chr6 result.
+
+| chromosome | n | contrast | z |  | drop | contrast | z |
+|---|---|---|---|---|---|---|---|
+| chr6 | 3,146 | +0.058 | +0.28 | | chr6 | **+0.114** | +2.49 |
+| chr13 | 1,850 | +0.335 | +2.29 | | chr13 | +0.033 | +0.49 |
+| chr14 | 1,692 | +0.196 | +2.14 | | chr14 | +0.059 | +0.92 |
+| chr15 | 1,451 | +0.045 | +0.61 | | chr15 | +0.074 | +1.13 |
+| chr16 | 1,381 | −0.011 | −0.10 | | chr16 | +0.079 | +1.15 |
+| chr17 | 1,381 | −0.047 | −0.44 | | chr17 | +0.088 | +1.35 |
+| chr18 | 1,452 | +0.300 | +1.47 | | chr18 | +0.039 | +0.60 |
+| chr19 | 869 | +0.103 | +0.92 | | chr19 | +0.068 | +1.08 |
+| chr20 | 1,156 | +0.068 | +0.55 | | chr20 | +0.066 | +1.01 |
+| chr21 | 638 | +0.048 | +0.41 | | chr21 | +0.071 | +1.13 |
+| chr22 | 600 | +0.316 | +1.40 | | chr22 | +0.057 | +0.91 |
+
+Nine of eleven chromosomes lean positive (mean +0.128) but the scatter is large
+(sd 0.136, range −0.047…+0.335). The between-chromosome scatter implies a standard error
+on the mean of 0.041, against the pooled block-jackknife 0.061 — the same order, so the
+jackknife is not materially understating the error.
+
+### Polarized pattern spectrum (chr13–22 values, for reference)
 
 | pattern | total | per window | α (relative dispersion) | lag-1 autocorr |
 |---|---|---|---|---|
@@ -141,12 +184,13 @@ rare a pattern is.
 | `pat_vin_only` | 4,091 | 0.33 | 3.330 ± 0.279 | +0.291 |
 | `pat_chag_only` | 2,327 | 0.19 | 6.579 ± 2.094 | +0.247 |
 
-**T1 contrast: α(`pat_nea_all`) − α(`pat_alt_only`) = +0.114 ± 0.046 (z = +2.49).**
-
-**T2:** Denisovan minus Neanderthal-mean tail mass = +0.0024 ± 0.0012 (z = +1.99) —
-a weak Model-B-direction excess.
-
-**T3:** corr(R_den, R_nea) = +0.727 ± 0.013.
+### MHC positive control
+Excluded from the primary scan and reported separately: 120 windows at chr6:28–34 Mb,
+median `div_den_afr` 1.10× the genome-wide median. Elevated in the expected direction —
+trans-species balancing selection produces genuinely ancient haplotypes — and modest at
+50-kb resolution because the extreme signal sits in a narrower interval. It behaves as a
+deep-but-shared region rather than an archaic-specific one, which is the correct
+behaviour for a rate-normalized method.
 
 ---
 
@@ -164,14 +208,23 @@ materially changes the "absent in Africans" filter).
 | legacy % co-located | 81% | 54% | 30% | 25% | 60% | 62% |
 
 The T1 contrast behaves as designed: **≈0 under the null and under Model B, clearly
-positive under Model A.** The observed +0.114 sits essentially on M1 (+0.112) and away
-from M0 (−0.017) and M2 (−0.003).
+positive under Model A.** That is the important part — the statistic discriminates, which
+`den_excess` provably could not.
 
-### Why this is *suggestive*, not a result
+The observed value does not. At **+0.067 ± 0.061** it is 1.38 SE from M0 (−0.017) and
+0.74 SE from M1 (+0.112): **consistent with both.** The models are only 0.129 apart,
+which is 2.1 SE at current coverage, so the data cannot yet choose between them. The
+earlier chr13–22 value of +0.114 sat on M1, but as §2 shows that was a one-chromosome
+accident.
 
+### Why no claim is made
+
+0. **The observed value is not significant** (z = 1.09) and is not stable across
+   chromosomes (§2). Everything below would matter *if* it were.
 1. **M4 (ancient structure) produces the same signal** (+0.152). Continuous deep
    structure without any discrete pulse mimics Model A on this statistic. This is the
-   long-standing Rogers-versus-structure ambiguity, and nothing here resolves it.
+   long-standing Rogers-versus-structure ambiguity, and nothing here resolves it — so
+   even a significant result would not by itself support Model A over structure.
 2. **The contrast depends on which drift control is used.** The three
    single-Neanderthal patterns are supposed to be exchangeable but give α = 0.58
    (Altai), 3.33 (Vindija), 6.58 (Chagyrskaya). Against Vindija or Chagyrskaya the
@@ -219,37 +272,50 @@ question.** Under Model A the two lineages carry deep ancestry at *different* lo
 at any conditioning level. The pilot's apparent significance was a selection artefact,
 and the de-biased version is a smaller one.
 
-**Neanderthal-clade deep-ancestry clustering: a weak positive signal, consistent with
-Model A and equally consistent with ancient structure.** The Model-A-diagnostic
-statistic sits where a true Model A would put it and away from the null and Model B, is
-stable across data-quality filters, but is z ≈ 2.5 on a third of the genome, depends on
-the choice of drift control, rests on an unfitted demography, and does not separate
-Model A from ancient population structure.
+**Neanderthal-clade deep-ancestry clustering: no significant signal.** The
+Model-A-diagnostic statistic is +0.067 ± 0.061 (z = 1.09) — consistent with the null and
+equally consistent with Model A, because at 33% of the autosomes those two hypotheses
+are only 2.1 SE apart. The chr13–22 value of +0.114 (z = 2.49) did not survive the
+addition of chr6.
 
-**This is a candidate signal that did not exist before, not a finding.** The previous
-version reported a confident null that was an artefact; this version reports a weak
-positive that is honestly bounded. Neither licenses a claim about superarchaic ancestry
-in Neanderthals.
+**No claim is made in either direction.** The previous version reported a confident null
+that was an artefact of its own selection rule; this version reports an honest
+non-result with a known power. That is a smaller-sounding but far more useful position:
+the question is now open and answerable, rather than closed on bad evidence.
 
 ---
 
-## 5. What would settle it
+## 5. What this bought: the question is now a sample-size problem
 
-1. **`sims/power_calibration.py --reps 20 --jobs 6`** (~3 h) — replicate-level FPR and
-   power, and where the observed value falls in each model's distribution. Until this
-   runs, "z = 2.49" has no calibrated false-positive rate behind it.
-2. **Fit the demography** so the simulated pattern spectrum matches the observed one
-   (chiefly `pat_all_arch`). Power numbers are not quantitative until this is closed.
-3. **An explicit ancient-structure model** fitted to the data. This is the one
-   confounder that reproduces the signal, and no amount of extra sequence removes it.
-4. **The remaining autosomes.** Note this is the *smallest* available gain: going from
-   33% to 100% of the genome shrinks the standard error by only ~1.7×, taking z ≈ 2.5
-   to ≈ 4.3 *if the effect is real*. The method changes above were worth far more than
-   the data, which is why they came first.
-5. **chr6/MHC as a positive control.** The MHC carries trans-species balancing
-   selection — genuinely ancient haplotypes that are *not* archaic introgression. A
-   correct rate-normalized method should flag it as ancient and shared, not
-   archaic-specific. It is excluded from the primary scan and reported separately.
+This is the substantive change. The old co-location test had **~6% power under a true
+Model A at any genome coverage** — sequencing every chromosome would not have fixed it,
+because co-location is the wrong expectation, not a sample-size shortfall. The redesigned
+statistic separates M0 from M1 by 0.129 with a standard error that shrinks as √n:
+
+| coverage | windows | SE | z under Model A | power |
+|---|---|---|---|---|
+| **now** (chr6 + chr13–22, 33%) | 15,616 | 0.061 | 2.11 | **68%** |
+| + chr8–12 (53%) | 25,173 | 0.048 | 2.69 | 85% |
+| all autosomes | 46,669 | 0.035 | 3.66 | **98%** |
+
+So finishing the genome is now worth doing, and it was not before. Ranked by value:
+
+1. **Acquire the remaining autosomes.** ~12 h of staged download per 5 chromosomes at
+   the observed 12 min/genome, disk-bounded, fully resumable. Takes the test from 68% to
+   98% power. This is now the highest-value action, which inverts the pilot's advice.
+2. **`sims/power_calibration.py --reps 20 --jobs 6`** (~3 h) — replicate-level FPR and
+   power. The projection above assumes normality and the simulated effect size; this
+   measures both. Run it before trusting the table.
+3. **Fit the demography** so the simulated pattern spectrum matches the observed one
+   (chiefly `pat_all_arch`, currently ~8× too abundant). The effect size 0.129 that the
+   whole power calculation rests on is only as good as this.
+4. **An explicit ancient-structure model.** M4 reproduces the Model-A signal, so even a
+   98%-power result would not distinguish them. No amount of extra sequence fixes this;
+   it needs a fitted structure model or an ARG method at candidate loci.
+5. **Resolve the drift-control choice.** The three single-Neanderthal patterns are not
+   exchangeable (α = 0.58 / 3.33 / 6.58); only Altai has enough private sites for α to
+   be well determined. A control that does not depend on one genome's branch length
+   would make T1 considerably more robust.
 
 **Reproduce:** `src/stagger.sh <chroms>` → `src/scan_windows.py --jobs 4` →
 `src/modelA.py --sensitivity` → `sims/superarchaic_sim.py` battery →
