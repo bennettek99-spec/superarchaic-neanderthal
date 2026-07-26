@@ -59,16 +59,25 @@ NE = dict(CHIMP=10000, SUPER=15000, HUM=12000, AFR=15000, EUR=8000,
 
 
 def build(model: str, f_super: float = 0.04, f_den: float = 0.03,
-          f_nea: float = 0.03, m_struct: float = 2e-5) -> msprime.Demography:
+          f_nea: float = 0.03, m_struct: float = 2e-5,
+          t_hn: float = None, ne_nsov: float = None) -> msprime.Demography:
+    """Build the demography. `t_hn` and `ne_nsov` override the module defaults so the
+    Neandersovan branch can be fitted (see fit_demography.py) rather than assumed."""
+    t_hn = T_HN if t_hn is None else t_hn
     d = msprime.Demography()
     for name, size in NE.items():
-        d.add_population(name=name, initial_size=size)
+        d.add_population(name=name,
+                         initial_size=(ne_nsov if name == "NSOV" and ne_nsov else size))
     # Neanderthal->EUR pulse (realism; ~2%)
     d.add_mass_migration(time=_g(T_NEA_INTO_EUR), source="EUR", dest="VIN", proportion=0.02)
 
     # superarchaic gene flow per model (SOURCE lineages -> SUPER, backward in time)
     if model == "M1_neandersovan":
-        d.add_mass_migration(time=_g(500_000), source="NSOV", dest="SUPER", proportion=f_super)
+        # midpoint of the Neandersovan branch. This was hardcoded at 500 ka, which is
+        # silently invalid once t_hn drops below it -- NSOV does not exist before t_hn,
+        # so a fitted branch length would have placed the pulse outside its own branch.
+        d.add_mass_migration(time=_g(0.5 * (T_NDSPLIT + t_hn)), source="NSOV",
+                             dest="SUPER", proportion=f_super)
     elif model == "M2_denisovan_only":
         d.add_mass_migration(time=_g(300_000), source="DEN", dest="SUPER", proportion=f_super)
     elif model == "M3_separate":
@@ -78,7 +87,7 @@ def build(model: str, f_super: float = 0.04, f_den: float = 0.03,
         # continuous deep exchange between SUPER and the NSOV branch (structure, no pulse)
         d.add_migration_rate_change(time=_g(T_NDSPLIT + 10_000), rate=m_struct,
                                     source="NSOV", dest="SUPER")
-        d.add_migration_rate_change(time=_g(T_HN), rate=0, source="NSOV", dest="SUPER")
+        d.add_migration_rate_change(time=_g(t_hn), rate=0, source="NSOV", dest="SUPER")
     elif model != "M0_none":
         raise ValueError(model)
 
@@ -87,7 +96,7 @@ def build(model: str, f_super: float = 0.04, f_den: float = 0.03,
     d.add_population_split(time=_g(T_NEA2), derived=["VIN", "CHAG"], ancestral="VC")
     d.add_population_split(time=_g(T_NEA1), derived=["VC", "ALTAI"], ancestral="NEA")
     d.add_population_split(time=_g(T_NDSPLIT), derived=["NEA", "DEN"], ancestral="NSOV")
-    d.add_population_split(time=_g(T_HN), derived=["HUM", "NSOV"], ancestral="HN")
+    d.add_population_split(time=_g(t_hn), derived=["HUM", "NSOV"], ancestral="HN")
     d.add_population_split(time=_g(T_AFREUR), derived=["AFR", "EUR"], ancestral="HUM")
     d.add_population_split(time=_g(T_SUPER), derived=["SUPER", "HN"], ancestral="ANC0")
     d.add_population_split(time=_g(T_CHIMP), derived=["ANC0", "CHIMP"], ancestral="ROOT")
@@ -165,7 +174,8 @@ def _rate_map(mult, win, base, seq_len):
 
 
 def simulate_hetero(model, seq_len=30_000_000, win=50_000, mu=1.25e-8, rho=1e-8,
-                    seed=1, f_super=0.06, rate_hetero=True, recomb_cv=0.6):
+                    seed=1, f_super=0.06, rate_hetero=True, recomb_cv=0.6,
+                    t_hn=None, ne_nsov=None):
     """Ancestry + mutations under heterogeneous rates. Returns (mts, rate_multipliers)."""
     rng = np.random.default_rng(seed)
     nwin = int(np.ceil(seq_len / win))
@@ -176,7 +186,8 @@ def simulate_hetero(model, seq_len=30_000_000, win=50_000, mu=1.25e-8, rho=1e-8,
     else:
         mult = np.ones(nwin)
         rmult = np.ones(nwin)
-    demo = build(model, f_super=f_super, f_den=f_super, f_nea=f_super)
+    demo = build(model, f_super=f_super, f_den=f_super, f_nea=f_super,
+                 t_hn=t_hn, ne_nsov=ne_nsov)
     samples = [msprime.SampleSet(n, population=p, time=_g(t)) for p, n, t in SAMPLES]
     ts = msprime.sim_ancestry(
         samples=samples, demography=demo, sequence_length=seq_len,
