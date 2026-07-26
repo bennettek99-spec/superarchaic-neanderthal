@@ -304,11 +304,30 @@ So finishing the genome is now worth doing, and it was not before. Ranked by val
    the observed 12 min/genome, disk-bounded, fully resumable. Takes the test from 68% to
    98% power. This is now the highest-value action, which inverts the pilot's advice.
 2. **`sims/power_calibration.py --reps 20 --jobs 6`** (~3 h) — replicate-level FPR and
-   power. The projection above assumes normality and the simulated effect size; this
-   measures both. Run it before trusting the table.
-3. **Fit the demography** so the simulated pattern spectrum matches the observed one
-   (chiefly `pat_all_arch`, currently ~8× too abundant). The effect size 0.129 that the
-   whole power calculation rests on is only as good as this.
+   power. **This is now the most urgent item**, ahead of any demography work: the
+   M1 − M0 separation of 0.129, on which the entire table above rests, is itself poorly
+   determined. Independent 50 Mb runs put it anywhere from −0.033 to +0.189. Until the
+   effect size is pinned down the power column is indicative only.
+3. **Fix the AFRICAN model — not the Neandersovan branch.** `pat_all_arch` is ~8× too
+   abundant in simulation, but *not* because the Neandersovan branch is mis-specified,
+   and fitting that branch would be a mistake. The evidence:
+
+   | check | result |
+   |---|---|
+   | `pat_all_arch`/`pat_den_only` vs `T_HN` (470/540/620/700 ka) | 0.224 / 0.408 / 0.650 / 0.828 — cleanly monotone, so the ratio *would* identify the branch |
+   | observed ratio | **0.113** → extrapolates to `T_HN` ≈ 428 ka, an **~8 ky branch** against a 420 ka Nea–Den split. Impossible, and 120+ ky below the literature. |
+   | aDNA damage / single-genome error | **ruled out** — transversion fraction is equal across all four patterns (0.291–0.313); a transversions-only pass moves the ratio only 0.113 → 0.122 |
+   | the "absent in Africans" condition | **the cause** — it removes **94.3%** of `pat_all_arch` but only **38.3%** of `pat_den_only` |
+   | ratio without that condition | **1.227**, *above* the simulated 0.650 |
+
+   `pat_all_arch` variants arose on the Neandersovan branch (420–620 ka) and are old
+   enough to also segregate in Africans; Denisovan-private variants are younger and
+   mostly do not. The simulator's Africans are a single panmictic population at constant
+   Ne = 15,000 and retain far less ancient variation than real African populations, so
+   the filter bites far harder in the data than in the simulation. Either fit African
+   structure/Ne (the survival fractions above are excellent targets), or — cheaper and
+   more robust — use statistics that do not condition on an *exact-zero* African
+   frequency.
 4. **An explicit ancient-structure model.** M4 reproduces the Model-A signal, so even a
    98%-power result would not distinguish them. No amount of extra sequence fixes this;
    it needs a fitted structure model or an ARG method at candidate loci.
